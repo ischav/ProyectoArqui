@@ -1,1 +1,2 @@
 C:\Users\Isabel\Documents\UCR\Arquitectura\Proyecto\ProcesadorMIPS\bin\Debug\ProcesadorMIPS.exe.config
+C:\Users\Isabel\Documents\UCR\Arquitectura\Proyecto\ProyectoArqui\bin\Debug\ProcesadorMIPS.exe.config
