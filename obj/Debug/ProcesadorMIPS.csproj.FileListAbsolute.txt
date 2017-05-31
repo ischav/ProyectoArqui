@@ -1,2 +1,11 @@
 C:\Users\Isabel\Documents\UCR\Arquitectura\Proyecto\ProcesadorMIPS\bin\Debug\ProcesadorMIPS.exe.config
 C:\Users\Isabel\Documents\UCR\Arquitectura\Proyecto\ProyectoArqui\bin\Debug\ProcesadorMIPS.exe.config
+C:\Users\kenca\Documents\GitHub\ProyectoArqui\bin\Debug\ProcesadorMIPS.exe.config
+C:\Users\kenca\Documents\GitHub\ProyectoArqui\bin\Debug\ProcesadorMIPS.exe
+C:\Users\kenca\Documents\GitHub\ProyectoArqui\bin\Debug\ProcesadorMIPS.pdb
+C:\Users\kenca\Documents\GitHub\ProyectoArqui\obj\Debug\ProcesadorMIPS.csprojResolveAssemblyReference.cache
+C:\Users\kenca\Documents\GitHub\ProyectoArqui\obj\Debug\ProcesadorMIPS.Properties.Resources.resources
+C:\Users\kenca\Documents\GitHub\ProyectoArqui\obj\Debug\ProcesadorMIPS.csproj.GenerateResource.Cache
+C:\Users\kenca\Documents\GitHub\ProyectoArqui\obj\Debug\ProcesadorMIPS.exe
+C:\Users\kenca\Documents\GitHub\ProyectoArqui\obj\Debug\ProcesadorMIPS.pdb
+C:\Users\kenca\Documents\GitHub\ProyectoArqui\obj\Debug\ProcesadorMIPS.Form1.resources
