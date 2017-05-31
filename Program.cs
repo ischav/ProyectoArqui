@@ -12,11 +12,24 @@ namespace ProcesadorMIPS
         /// The main entry point for the application.
         /// </summary>
         [STAThread]
-        static void Main()
+        static void Main(String[] args)
         {
+
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new Form());
+            Procesador procesador = new Procesador();
+            procesador.Inicializar();
+
+            
+
         }
+
+        
+
+
+
+
+
+
     }
 }
