@@ -9,3 +9,12 @@ C:\Users\kenca\Documents\GitHub\ProyectoArqui\obj\Debug\ProcesadorMIPS.csproj.Ge
 C:\Users\kenca\Documents\GitHub\ProyectoArqui\obj\Debug\ProcesadorMIPS.exe
 C:\Users\kenca\Documents\GitHub\ProyectoArqui\obj\Debug\ProcesadorMIPS.pdb
 C:\Users\kenca\Documents\GitHub\ProyectoArqui\obj\Debug\ProcesadorMIPS.Form1.resources
+C:\Users\Johan Duran Cerdas\Codigo\Visual Studio 2017\Projects\ProyectoArqui\bin\Debug\ProcesadorMIPS.exe.config
+C:\Users\Johan Duran Cerdas\Codigo\Visual Studio 2017\Projects\ProyectoArqui\bin\Debug\ProcesadorMIPS.exe
+C:\Users\Johan Duran Cerdas\Codigo\Visual Studio 2017\Projects\ProyectoArqui\bin\Debug\ProcesadorMIPS.pdb
+C:\Users\Johan Duran Cerdas\Codigo\Visual Studio 2017\Projects\ProyectoArqui\obj\Debug\ProcesadorMIPS.csprojResolveAssemblyReference.cache
+C:\Users\Johan Duran Cerdas\Codigo\Visual Studio 2017\Projects\ProyectoArqui\obj\Debug\ProcesadorMIPS.Form1.resources
+C:\Users\Johan Duran Cerdas\Codigo\Visual Studio 2017\Projects\ProyectoArqui\obj\Debug\ProcesadorMIPS.Properties.Resources.resources
+C:\Users\Johan Duran Cerdas\Codigo\Visual Studio 2017\Projects\ProyectoArqui\obj\Debug\ProcesadorMIPS.csproj.GenerateResource.Cache
+C:\Users\Johan Duran Cerdas\Codigo\Visual Studio 2017\Projects\ProyectoArqui\obj\Debug\ProcesadorMIPS.exe
+C:\Users\Johan Duran Cerdas\Codigo\Visual Studio 2017\Projects\ProyectoArqui\obj\Debug\ProcesadorMIPS.pdb
