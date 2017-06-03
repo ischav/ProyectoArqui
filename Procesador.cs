@@ -14,8 +14,10 @@ namespace ProcesadorMIPS
     class Procesador
     {
 
-        public int[,,] memoria_instrucciones;
-        public int[,] memoria_datos, cache_L2;
+        public BloqueDatos[] memoria_datos;
+        public CacheDatos cache_L2;
+        public BloqueInstrucciones[] memoria_instrucciones;
+
         int  quantum, cantidad_hilillos;
         const int INVALIDO = -1;
         const int COMPARTIDO = 0;
@@ -31,19 +33,18 @@ namespace ProcesadorMIPS
         {
             quantum = 0;
             // Memoria Instrucciones = 40 bloques, 4 palabras por bloque, 4 cantidad de numeros por instruccion.
-            memoria_instrucciones = new int[40, 4, 4];
+            memoria_instrucciones = new BloqueInstrucciones[40];
             // Memomia Datos = 24 bloques, 4 palabras.
-            memoria_datos = new int[24, 4];
+            memoria_datos = new BloqueDatos[24];
             // Cache L2 Compartida = 8 bloques, 4 palabras, estado y numero de bloque en memoria principal.
-            cache_L2 = new int[8, 6];
+            cache_L2 = new CacheDatos(8);
 
-            //Se crean e inicializan los nucleos con sus respectivas caché L1
+
+            //Se crean e inicializan los nucleos.
             nucleos = new Nucleo[2];
             for (int i = 0;i<2;i++)
             {
                 nucleos[i] = new Nucleo();
-                nucleos[i].inicializarCacheL1Datos();
-                nucleos[i].inicializarCacheL1Inst();
             }
 
             //Se inicializa la cola donde serán almacenados los hilillos
@@ -65,24 +66,21 @@ namespace ProcesadorMIPS
             this.quantum = q;
         }
         
+
         /*
          * Método que inicializa la memoria principal(datos e instrucciones) en 1.
         */
         public void IniciarMemoria() {
-            //Se inicializa la memoria de instrucciones en 1.
+            
             for (int i = 0; i < 40; i++) {
-                for (int j = 0; j < 4; j++) {
-                    for (int k = 0; k < 4; k++) {
-                        memoria_instrucciones[i, j, k] = 1;
-                    }
-                }
+                memoria_instrucciones[i] = new BloqueInstrucciones();
+                //Se inicializa la memoria de instrucciones en 1. TODO
             }
 
-            //Se inicializa la memoria de datos en 1.
+            
             for (int i = 0; i < 24; i++){
-                for (int j = 0; j < 4; j++){
-                    memoria_datos[i, j] = 1;
-                }
+                memoria_datos[i] = new BloqueDatos();
+                //Se inicializa la memoria de datos en 1. TODO
             }
         }
 
@@ -93,43 +91,31 @@ namespace ProcesadorMIPS
         public void CargarInstrucciones(String[] rutas)
         {
             string line;
-            String[] Instruccion;
+            String[] instruccion_string;
+            int[] instruccion = new int[4];
             int bloque, palabra;
-            int counter = 0;
+            int dir_memoria = 0;
             int inicio = 0;
             int fin = 0;
             System.IO.StreamReader file;
             for (int i = 0; i < rutas.Length; i++) {
                 //Contexto[i, 32] = counter;
                 file = new System.IO.StreamReader(rutas[i]); // accede al texto.
-                inicio = counter;
+                inicio = dir_memoria;
                 while ((line = file.ReadLine()) != null)
                 {
-                    bloque = counter / 16; //número de bloque.
-                    palabra = (counter % 16) / 4; //numero de palabra.
-                    Instruccion = line.Split(' '); //Separa la instruccion en los 4 números
-                    for (int j = 0; j < 4; j++) {
-                        memoria_instrucciones[bloque, palabra, j] = Convert.ToInt32(Instruccion[j]); //asigna el numero en la matriz.
-                    }
-                    counter += 4; // suma el contador para el PC.
-                }
-                fin = counter;
-                crearHilillo(i,inicio,fin);
-            }
-        }
+                    bloque = dir_memoria / 16; //número de bloque.
+                    palabra = (dir_memoria % 16) / 4; //numero de palabra.
+                    instruccion_string = line.Split(' '); //Separa la instruccion en los 4 números
 
-        /*
-         * Método para poner en invalido y ceros los bloques en cache al inicio de la ejecución. 
-         */
-        public void InicializarCache()
-        {
-            for (int i = 0; i < 8; i++)
-            {
-                for (int j=0;j<6;j++)
-                {
-                    cache_L2[i, j] = 0;
+                    for (int j = 0; j < 4; j++) {
+                        instruccion[j] = Convert.ToInt32(instruccion_string[j]); //asigna el numero en la matriz.
+                    }
+                    memoria_instrucciones[bloque].setInstruccion(instruccion,palabra);
+                    dir_memoria += 4; // suma el contador para el PC.
                 }
-                cache_L2[i, 4] = INVALIDO;
+                fin = dir_memoria;
+                crearHilillo(i,inicio,fin);
             }
         }
 
@@ -151,7 +137,7 @@ namespace ProcesadorMIPS
         /*
          * Metodo para imprimir todos los datos actualmente en memoria y caché
         */
-        public string imprimirMemoriaEstructuras()
+ /*       public string imprimirMemoriaEstructuras()
         {
             string datos = "";
             datos += "\nMemoria principal de instrucciones\n";
@@ -205,7 +191,7 @@ namespace ProcesadorMIPS
             }
 
             return datos;
-        }
+        }*/
 
         /*
          * Retorna verdadero si se pudo desencolar un hilillo

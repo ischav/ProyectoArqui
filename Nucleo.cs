@@ -27,58 +27,7 @@ namespace ProcesadorMIPS
             // Cache L1 Datos = 4 bloques, 6 donde 4 son palabras, estado y numero del bloque.
             cache_L1_datos = new CacheDatos(4);
         }
-
-        /*
-         * Método para poner en invalido y en ceros los bloques de datos en cache al inicio de la ejecución. 
-        */
-        public void inicializarCacheL1Datos() {
-            for (int i = 0; i < 4; i++) {
-                for (int j=0;j<6;j++)
-                {
-                    cache_L1_Datos[i, j] = 0;
-                }
-                cache_L1_Datos[i, 4] = INVALIDO;
-            }
-        }
-
-        /*
-        * Método para poner en invalido y en ceros los bloques de insgr en cache al inicio de la ejecución. 
-        */
-        public void inicializarCacheL1Inst()
-        {
-            for (int i = 0; i < 4; i++)
-            {
-                for (int j = 0; j < 4; j++)
-                {
-                    for (int k=0;k<4;k++)
-                    {
-                        cache_L1_Instr[i, j, k] = 0;
-                    }
-                }
-                cache_L1_instr_etiq[i] = INVALIDO;
-            }
-        }
-
-
-        /*
-        *
-        *
-        */
-        public int[,] obtenerL1Datos()
-        {
-            return cache_L1_Datos;
-        }
-
-        /*
-        *
-        *
-        */
-        public int[,,] obtenerL1Instrucciones()
-        {
-            return cache_L1_Instr;
-        }
-
-
+        
 
         /*
         *
@@ -87,8 +36,9 @@ namespace ProcesadorMIPS
         public void asignarContexto(int[] reg)
         {
 
-            for (int i = 0; i < 33; i++)
+            for (int i = 0; i < 32; i++)
                 registros_nucleo[i] = reg[i];
+            pc_nucleo = reg[32];
         }
 
 
