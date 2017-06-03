@@ -24,16 +24,20 @@ namespace ProcesadorMIPS
         */
         public Hilillo(int identificador)
         {
+            // Hay que considerar sacar PC del vector que maneja el contexto
             this.identificador_hilillo = identificador;
             inicio_hilillo = 0;
             fin_hilillo = 0;
             quantum_hilillo = 0;
+            nucleo_hilillo = -1; // Para que inicialmente no pertenezca a ninguno
             finalizado_hilillo = false;
             registros_hilillo = new int[33];
             for (int i = 0; i < registros_hilillo.Length; i++)
             {
                 registros_hilillo[i] = 0;
             }
+
+            ciclos_reloj_hilillo = 0;
         }
 
         /*

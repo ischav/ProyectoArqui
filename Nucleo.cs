@@ -8,16 +8,16 @@ namespace ProcesadorMIPS
 {
     public class Nucleo
     {
+        // Estados de un bloque
         const int INVALIDO = -1;
         const int COMPARTIDO = 0;
-        const int MODIFICADO = 1;
+        const int MODIFICADO = 1
+        
         public static int[] registros_nucleo, cache_L1_instr_etiq;
         public static int[,] cache_L1_Datos;
         public static int[,,] cache_L1_Instr;
         // Program Counter
         public int pc_nucleo;
-
-
 
         public Nucleo() {
             // Registros = 32 registros y el RL

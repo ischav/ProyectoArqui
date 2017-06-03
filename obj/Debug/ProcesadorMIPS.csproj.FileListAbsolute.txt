@@ -18,3 +18,11 @@ C:\Users\Johan Duran Cerdas\Codigo\Visual Studio 2017\Projects\ProyectoArqui\obj
 C:\Users\Johan Duran Cerdas\Codigo\Visual Studio 2017\Projects\ProyectoArqui\obj\Debug\ProcesadorMIPS.csproj.GenerateResource.Cache
 C:\Users\Johan Duran Cerdas\Codigo\Visual Studio 2017\Projects\ProyectoArqui\obj\Debug\ProcesadorMIPS.exe
 C:\Users\Johan Duran Cerdas\Codigo\Visual Studio 2017\Projects\ProyectoArqui\obj\Debug\ProcesadorMIPS.pdb
+C:\Users\Isabel\Documents\UCR\Arquitectura\Proyecto\ProyectoArqui\bin\Debug\ProcesadorMIPS.exe
+C:\Users\Isabel\Documents\UCR\Arquitectura\Proyecto\ProyectoArqui\bin\Debug\ProcesadorMIPS.pdb
+C:\Users\Isabel\Documents\UCR\Arquitectura\Proyecto\ProyectoArqui\obj\Debug\ProcesadorMIPS.csprojResolveAssemblyReference.cache
+C:\Users\Isabel\Documents\UCR\Arquitectura\Proyecto\ProyectoArqui\obj\Debug\ProcesadorMIPS.Form1.resources
+C:\Users\Isabel\Documents\UCR\Arquitectura\Proyecto\ProyectoArqui\obj\Debug\ProcesadorMIPS.Properties.Resources.resources
+C:\Users\Isabel\Documents\UCR\Arquitectura\Proyecto\ProyectoArqui\obj\Debug\ProcesadorMIPS.csproj.GenerateResource.Cache
+C:\Users\Isabel\Documents\UCR\Arquitectura\Proyecto\ProyectoArqui\obj\Debug\ProcesadorMIPS.exe
+C:\Users\Isabel\Documents\UCR\Arquitectura\Proyecto\ProyectoArqui\obj\Debug\ProcesadorMIPS.pdb

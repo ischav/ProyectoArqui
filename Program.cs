@@ -20,6 +20,7 @@ namespace ProcesadorMIPS
             Application.SetCompatibleTextRenderingDefault(false);
             Procesador procesador = new Procesador();
 
+            Console.WriteLine("---- Procesador MIPS para enteros con 2 núcleos ----\n");
             int cantidad_hilillos = obtenerCantidadHilillos();
             string[] rutas = leerArchivo(cantidad_hilillos);
             int quantum = obtenerQuantum();
@@ -27,10 +28,11 @@ namespace ProcesadorMIPS
             procesador.asignarQuantum(quantum);
             procesador.IniciarMemoria();
             procesador.InicializarCache();
-            
-            //al cargarsen las instrucciones se crean los hilillos ya que es el punto donde se sabe cuales intrucciones deben ejecutar
-            procesador.CargarInstrucciones(rutas);
 
+            /* Al cargar las instrucciones se crean los hilillos 
+             * ya que es el punto donde se sabe cuales intrucciones 
+             * se deben ejecutar*/
+            procesador.CargarInstrucciones(rutas);
 
             Console.Write(procesador.imprimirMemoriaEstructuras());
 
@@ -61,16 +63,19 @@ namespace ProcesadorMIPS
 
         public static int obtenerCantidadHilillos()
         {
-            //se recibe la cantidad de hilos
-            Console.WriteLine("Ingrese el número de hilillos que desea correr = ");
-            int cantidad_hilillos = Convert.ToInt32(Console.ReadLine());
+            int cantidad_hilillos = 0;
+            //se recibe la cantidad de hilillos y se verifica que sea mayor a cero
+            while (cantidad_hilillos <= 0) {
+                Console.WriteLine("Ingrese el número de hilillos que desea correr = ");
+                cantidad_hilillos = Convert.ToInt32(Console.ReadLine());
+            }
             return cantidad_hilillos;
         }
 
-        public static string [] leerArchivo(int cantidad_hilillos)
+        // Leer ruta de archivos
+        public static string[] leerArchivo(int cantidad_hilillos)
         {
             String[] rutas = new String[cantidad_hilillos];
-
 
             for (int i = 0; i < cantidad_hilillos; i++)
             {
@@ -82,9 +87,7 @@ namespace ProcesadorMIPS
                     rutas[i] = op.FileName;
                     Console.WriteLine(rutas[i]);
                 }
-
             }
-
             return rutas;
         }
 

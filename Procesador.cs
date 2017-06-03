@@ -20,7 +20,7 @@ namespace ProcesadorMIPS
         const int INVALIDO = -1;
         const int COMPARTIDO = 0;
         const int MODIFICADO = 1;
-        Nucleo []nucleos;//contiene ambos nucleos de la maquina
+        Nucleo []nucleos; //contiene ambos nucleos de la maquina
         Queue<Hilillo> cola_hilillos;//cola de donde los nucleos obtienen hilillos para ejecutar
 
         /*
@@ -46,15 +46,13 @@ namespace ProcesadorMIPS
                 nucleos[i].inicializarCacheL1Inst();
             }
 
-
             //Se inicializa la cola donde serán almacenados los hilillos
             cola_hilillos = new Queue<Hilillo>();
 
         }
 
-
         /*
-         * indica la cantidad total de hilillos que corren en la simulacion
+         * Indica la cantidad total de hilillos que corren en la simulacion
         */
         public void asignarNumeroHilillos(int num_hilillos)
         {
@@ -88,8 +86,6 @@ namespace ProcesadorMIPS
             }
         }
 
-
-
         /*
          * Método que carga las instrucciones de los hilillos en memoria de instrucciones
          * Recibe por parametro un vector con los nombres de los archivos que contienen las instrucciones
@@ -121,7 +117,6 @@ namespace ProcesadorMIPS
                 crearHilillo(i,inicio,fin);
             }
         }
-
 
         /*
          * Método para poner en invalido y ceros los bloques en cache al inicio de la ejecución. 
@@ -227,23 +222,91 @@ namespace ProcesadorMIPS
 
             return true;
         }
-
-
-
-        /*Metodo principal de la simulación 
+        
+        /* Metodo principal de la simulación 
          * Una vez todo cargado en el procesador inicia la ejecución
          * recibe por parámetro el número de nucleo que se está llamando
         */
         public void inicializar(object nucleo)
         {
             int num_nucleo = Convert.ToInt32(nucleo);
-            Console.WriteLine("iniciando el núcleo: "+Convert.ToString(num_nucleo));
-            while (this.cola_hilillos.Count>0)//mientras existan hilos en cola ejecutar
+            Console.WriteLine("iniciando el núcleo: "+ Convert.ToString(num_nucleo));
+            while (this.cola_hilillos.Count>0) //mientras existan hilos en cola ejecutar
             {
                 if (desencolarHilillo(num_nucleo))
                 {
                     
                 }
+            }
+        }
+
+        // Método "Ejecutarse" en el diseño
+        public void ejecutarInstruccion(int CodigoOperacion, int op1, int op2, int op3) {
+            // 
+
+            switch (CodigoOperacion)
+            {
+                /* DADDI
+                 * Si(op2 == 0):
+                 *  “El registro 0 es inválido como destino”
+                 *  R[op2] = R[op1] + op3
+                 */
+                case 8:
+                    break;
+                /* DADD 
+                 * Si(op2 == 0): 
+                 *  “El registro 0 es inválido como destino”
+                 *  R[op3] = R[op1] + R[op2]
+                 */
+                case 32:
+                    break;
+                /* DSUB
+                 * Si(op2 == 0):
+                 *  “El registro 0 es inválido como destino”
+                 *  R[op3] = R[op1] - R[op2]
+                 */
+                case 34:
+                    break;
+                /* DMUL
+                 * Si(op2 == 0):
+                 *  “El registro 0 es inválido como destino”
+                 *  R[op3] = R[op1] * R[op2]
+                 */
+                case 12:
+                    break;
+                /* DDIV
+                 * Si(op2 == 0):
+                 *  “El registro 0 es inválido.”
+                 *  R[op3] = R[op1] / R[op2]
+                 */
+                case 14:
+                    break;
+                /* BEQZ
+                 * Si(R[op1] == 0):
+                 *  PC += op3 * 4
+                 */
+                case 4:
+                    break;
+                /* BNEZ
+                 * Si(R[op1] != 0):
+                 *  PC += op3 * 4
+                 */
+                case 5:
+                    break;
+                /* JAL
+                 * R[31] = PC
+                 * PC += op3
+                 */
+                case 3:
+                    break;
+                /* JR
+                 * PC = R[op1];
+                 */
+                case 2:
+                    break;
+                /* FIN */
+                case 63:
+                    break;
             }
         }
 
