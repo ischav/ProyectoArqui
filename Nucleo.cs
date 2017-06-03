@@ -11,11 +11,11 @@ namespace ProcesadorMIPS
         // Estados de un bloque
         const int INVALIDO = -1;
         const int COMPARTIDO = 0;
-        const int MODIFICADO = 1
+        const int MODIFICADO = 1;
         
-        public static int[] registros_nucleo, cache_L1_instr_etiq;
-        public static int[,] cache_L1_Datos;
-        public static int[,,] cache_L1_Instr;
+        public static int[] registros_nucleo;
+        public CacheDatos cache_L1_datos;
+        public CacheInstrucciones cache_L1_instr;
         // Program Counter
         public int pc_nucleo;
 
@@ -23,11 +23,9 @@ namespace ProcesadorMIPS
             // Registros = 32 registros y el RL
             registros_nucleo = new int[33];
             // Cache L1 Instrucciones = 4 bloques, 4 palabras, 4 numeros por instruccion.
-            cache_L1_Instr = new int[4, 4, 4];
-            // Cache L1 Instrucciones Etiquetas = para almacenar el numero de bloque de memoria.
-            cache_L1_instr_etiq = new int[4];
+            cache_L1_instr = new CacheInstrucciones();
             // Cache L1 Datos = 4 bloques, 6 donde 4 son palabras, estado y numero del bloque.
-            cache_L1_Datos = new int[4, 6];
+            cache_L1_datos = new CacheDatos(4);
         }
 
         /*
