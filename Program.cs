@@ -25,10 +25,14 @@ namespace ProcesadorMIPS
             string[] rutas = leerArchivo(cantidad_hilillos);
             int quantum = obtenerQuantum();
 
+            //se asigna el quantum al procesado
             procesador.asignarQuantum(quantum);
+            //se asigna la cantidad de hilillos al procesador
             procesador.asignarNumeroHilillos(cantidad_hilillos);
+            //se crean las estructuras para la memoria principal
             procesador.IniciarMemoria();
-            //procesador.InicializarCache();
+            //se crean los nucleos y son memorias asociadas
+            procesador.IniciarNucleos();
 
             /* Al cargar las instrucciones se crean los hilillos 
              * ya que es el punto donde se sabe cuales intrucciones 

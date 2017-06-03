@@ -14,9 +14,14 @@ namespace ProcesadorMIPS
     class Procesador
     {
 
+        //variables que pertenecen a procesador
         public BloqueDatos[] memoria_datos;
         public CacheDatos cache_L2;
         public BloqueInstrucciones[] memoria_instrucciones;
+
+        //variables que pertenecen al nucleo
+        public CacheDatos[] cache_L1_datos;
+        public CacheInstrucciones[] cache_L1_instr;
 
         int  quantum, cantidad_hilillos;
         const int INVALIDO = -1;
@@ -38,14 +43,13 @@ namespace ProcesadorMIPS
             memoria_datos = new BloqueDatos[24];
             // Cache L2 Compartida = 8 bloques, 4 palabras, estado y numero de bloque en memoria principal.
             cache_L2 = new CacheDatos(8);
+            
 
 
-            //Se crean e inicializan los nucleos.
+            //Se crean los nucleos y sus caches
             nucleos = new Nucleo[2];
-            for (int i = 0;i<2;i++)
-            {
-                nucleos[i] = new Nucleo();
-            }
+            cache_L1_datos = new CacheDatos[2];
+            cache_L1_instr = new CacheInstrucciones[2];
 
             //Se inicializa la cola donde serán almacenados los hilillos
             cola_hilillos = new Queue<Hilillo>();
@@ -81,6 +85,24 @@ namespace ProcesadorMIPS
             for (int i = 0; i < 24; i++){
                 memoria_datos[i] = new BloqueDatos();
                 //Se inicializa la memoria de datos en 1. TODO
+            }
+        }
+
+
+        /*
+         * Metodo para inicializar las memorias caché
+         * 
+         */
+        public void IniciarNucleos()
+        {
+            for (int i = 0; i < 2; i++)
+            {
+                //se inicializan los núcleos
+                nucleos[i] = new Nucleo();
+                // Cache L1 Instrucciones = 4 bloques, 4 palabras, 4 numeros por instruccion.
+                cache_L1_datos[i] = new CacheDatos(4);
+                // Cache L1 Datos = 4 bloques, 6 donde 4 son palabras, estado y numero del bloque.
+                cache_L1_instr[i] = new CacheInstrucciones();
             }
         }
 
@@ -134,64 +156,6 @@ namespace ProcesadorMIPS
         }
 
 
-        /*
-         * Metodo para imprimir todos los datos actualmente en memoria y caché
-        */
- /*       public string imprimirMemoriaEstructuras()
-        {
-            string datos = "";
-            datos += "\nMemoria principal de instrucciones\n";
-            for (int i = 0; i < 40; i++)
-            {
-                for (int j = 0; j < 4; j++)
-                {
-                    for (int k = 0; k < 4; k++)
-                    {
-                        datos += Convert.ToString(memoria_instrucciones[i,j,k])+" | ";
-                    }
-                }
-            }
-
-            datos += "\nMemoria principal de datos\n";
-            for (int i = 0; i < 24; i++)
-            {
-                for (int j = 0; j < 4; j++)
-                {
-                    datos+=Convert.ToString(memoria_datos[i, j])+" | ";
-                }
-            }
-
-            for(int q = 0; q < 2; q++)
-            {
-                //se obtienen las matrices
-                int[,] l1_datos = nucleos[q].obtenerL1Datos();
-                int[,,] l1_inst = nucleos[q].obtenerL1Instrucciones();
-                //se obtienen los datos de las matrices
-                datos += "\nL1 de instrucciones\n";
-                for (int i = 0; i < 4; i++)
-                {
-                    for (int j = 0; j < 4; j++)
-                    {
-                        for (int k = 0; k < 4; k++)
-                        {
-                            datos += Convert.ToString(l1_inst[i, j, k]) + " | ";
-                        }
-                    }
-                }
-
-                datos += "\nL1de datos\n";
-                for (int i = 0; i < 4; i++)
-                {
-                    for (int j = 0; j < 6; j++)
-                    {
-                        datos += Convert.ToString(l1_datos[i, j]) + " | ";
-                    }
-                }
-
-            }
-
-            return datos;
-        }*/
 
         /*
          * Retorna verdadero si se pudo desencolar un hilillo
@@ -218,7 +182,7 @@ namespace ProcesadorMIPS
             int num_nucleo = Convert.ToInt32(nucleo);
             Console.WriteLine("iniciando el núcleo: "+ Convert.ToString(num_nucleo));
             while (this.cola_hilillos.Count>0) //mientras existan hilos en cola ejecutar
-            {
+            {   
                 if (desencolarHilillo(num_nucleo))
                 {
                     
@@ -295,7 +259,64 @@ namespace ProcesadorMIPS
                     break;
             }
         }
+        /*
+        * Metodo para imprimir todos los datos actualmente en memoria y caché
+       */
+        /*       public string imprimirMemoriaEstructuras()
+               {
+                   string datos = "";
+                   datos += "\nMemoria principal de instrucciones\n";
+                   for (int i = 0; i < 40; i++)
+                   {
+                       for (int j = 0; j < 4; j++)
+                       {
+                           for (int k = 0; k < 4; k++)
+                           {
+                               datos += Convert.ToString(memoria_instrucciones[i,j,k])+" | ";
+                           }
+                       }
+                   }
 
+                   datos += "\nMemoria principal de datos\n";
+                   for (int i = 0; i < 24; i++)
+                   {
+                       for (int j = 0; j < 4; j++)
+                       {
+                           datos+=Convert.ToString(memoria_datos[i, j])+" | ";
+                       }
+                   }
+
+                   for(int q = 0; q < 2; q++)
+                   {
+                       //se obtienen las matrices
+                       int[,] l1_datos = nucleos[q].obtenerL1Datos();
+                       int[,,] l1_inst = nucleos[q].obtenerL1Instrucciones();
+                       //se obtienen los datos de las matrices
+                       datos += "\nL1 de instrucciones\n";
+                       for (int i = 0; i < 4; i++)
+                       {
+                           for (int j = 0; j < 4; j++)
+                           {
+                               for (int k = 0; k < 4; k++)
+                               {
+                                   datos += Convert.ToString(l1_inst[i, j, k]) + " | ";
+                               }
+                           }
+                       }
+
+                       datos += "\nL1de datos\n";
+                       for (int i = 0; i < 4; i++)
+                       {
+                           for (int j = 0; j < 6; j++)
+                           {
+                               datos += Convert.ToString(l1_datos[i, j]) + " | ";
+                           }
+                       }
+
+                   }
+
+                   return datos;
+               }*/
 
     }
 }

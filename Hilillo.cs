@@ -11,8 +11,8 @@ namespace ProcesadorMIPS
         int identificador_hilillo;//valor único para cada hilillo
         int inicio_hilillo;//indica el inicio de la ejecución del hilillo.
         int fin_hilillo;//indica el fin de la ejecución del hilillo
-        int quantum_hilillo;//cantidad de ciclos de reloj
         int [] registros_hilillo;//es el contexto, mantiene los valores del hilillo.
+        int pc_hilillo;
         int nucleo_hilillo;//indica el procesador en el que está corriendo el hilillo
         int ciclos_reloj_hilillo;//cantidad de ciclos de reloj asignadas al hilillo
         bool finalizado_hilillo;//indica el estado del hilillo
@@ -28,15 +28,16 @@ namespace ProcesadorMIPS
             this.identificador_hilillo = identificador;
             inicio_hilillo = 0;
             fin_hilillo = 0;
-            quantum_hilillo = 0;
+            pc_hilillo = 0;
             nucleo_hilillo = -1; // Para que inicialmente no pertenezca a ninguno
             finalizado_hilillo = false;
-            registros_hilillo = new int[33];
+            registros_hilillo = new int[32];
             for (int i = 0; i < registros_hilillo.Length; i++)
             {
                 registros_hilillo[i] = 0;
             }
-
+            //se asigna el PC
+            pc_hilillo = registros_hilillo[32];
             ciclos_reloj_hilillo = 0;
         }
 
