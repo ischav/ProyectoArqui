@@ -26,15 +26,16 @@ namespace ProcesadorMIPS
             int quantum = obtenerQuantum();
 
             procesador.asignarQuantum(quantum);
+            procesador.asignarNumeroHilillos(cantidad_hilillos);
             procesador.IniciarMemoria();
-            procesador.InicializarCache();
+            //procesador.InicializarCache();
 
             /* Al cargar las instrucciones se crean los hilillos 
              * ya que es el punto donde se sabe cuales intrucciones 
              * se deben ejecutar*/
             procesador.CargarInstrucciones(rutas);
 
-            Console.Write(procesador.imprimirMemoriaEstructuras());
+            //Console.Write(procesador.imprimirMemoriaEstructuras());
 
             /*
              * En este punto el procesador tiene todo lo necesario para trabajar

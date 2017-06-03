@@ -74,7 +74,12 @@ namespace ProcesadorMIPS
 
         public void setInstruccion(Instruccion instruccion, int indice)
         {
-            instrucciones[indice] = instruccion;
+            instrucciones[indice].setInstruccion(instruccion.getInstruccion());
+        }
+
+        public void setInstruccion(int[] instruccion, int indice)
+        {
+            instrucciones[indice].setInstruccion(instruccion);
         }
 
         public Instruccion getInstruccion(int indice)
@@ -85,8 +90,10 @@ namespace ProcesadorMIPS
         public void setInstrucciones(Instruccion[] nuevas_instrucciones)
         {
             for (int i = 0; i < 4; i++)
-                instrucciones[i] = nuevas_instrucciones[i];
+                instrucciones[i].setInstruccion(nuevas_instrucciones[i].getInstruccion());
+           
         }
+        
 
         public Instruccion[] getInstrucciones()
         {
