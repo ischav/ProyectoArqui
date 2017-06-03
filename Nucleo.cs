@@ -13,7 +13,7 @@ namespace ProcesadorMIPS
         const int COMPARTIDO = 0;
         const int MODIFICADO = 1;
         
-        public static int[] registros_nucleo;
+        public int[] registros_nucleo;
         public CacheDatos cache_L1_datos;
         public CacheInstrucciones cache_L1_instr;
         // Program Counter
