@@ -18,11 +18,7 @@ namespace ProcesadorMIPS
         public BloqueDatos[] memoria_datos;
         public CacheDatos cache_L2;
         public BloqueInstrucciones[] memoria_instrucciones;
-
-        //variables que pertenecen al nucleo
-        public CacheDatos[] cache_L1_datos;
-        public CacheInstrucciones[] cache_L1_instr;
-
+        int reloj;
         int  quantum, cantidad_hilillos;
         const int INVALIDO = -1;
         const int COMPARTIDO = 0;
@@ -30,12 +26,22 @@ namespace ProcesadorMIPS
         Nucleo []nucleos; //contiene ambos nucleos de la maquina
         Queue<Hilillo> cola_hilillos;//cola de donde los nucleos obtienen hilillos para ejecutar
 
+        //Barreras de la simulación
+        public static Barrier barrera_inicio_instruccion;
+        public static Barrier barrera_fin_instruccion;
+        public static Barrier barrera_inicio_aumento_reloj;
+        public static Barrier barrera_fin_aumento_reloj;
+
+        //variables que pertenecen al nucleo
+        public CacheDatos[] cache_L1_datos;
+        public CacheInstrucciones[] cache_L1_instr;
         /*
          * Contructor de la clase
          * inicializa las variables
         */
         public Procesador()
         {
+            reloj = 0;
             quantum = 0;
             // Memoria Instrucciones = 40 bloques, 4 palabras por bloque, 4 cantidad de numeros por instruccion.
             memoria_instrucciones = new BloqueInstrucciones[40];
@@ -54,6 +60,11 @@ namespace ProcesadorMIPS
             //Se inicializa la cola donde serán almacenados los hilillos
             cola_hilillos = new Queue<Hilillo>();
 
+            //barrera que controla el quantum ya que una instrucción equivale a un elemento del quantum
+            barrera_inicio_instruccion = new Barrier(participantCount: 2);
+            barrera_fin_instruccion = new Barrier(participantCount: 2);
+            barrera_inicio_aumento_reloj = new Barrier(participantCount: 2);
+            barrera_fin_aumento_reloj = new Barrier(participantCount: 2);
         }
 
         /*
@@ -176,6 +187,7 @@ namespace ProcesadorMIPS
                         nucleos[num_nucleo].asignarContexto(contexto_hilo_desencolado);
                         pudo_desencolar = true;
                     }
+                    Monitor.Exit(cola_hilillos);
                     return pudo_desencolar;
                 }
             }
@@ -189,22 +201,70 @@ namespace ProcesadorMIPS
         {
             int num_nucleo = Convert.ToInt32(nucleo);
             Console.WriteLine("iniciando el núcleo: "+ Convert.ToString(num_nucleo));
+            /*
+             * while:Mientras no termine el quantum o no haya finalizado 
+             * obtiene el PC
+             * carga instrucción
+             * ejecuta instrucción
+             * fin ciclo while
+             * Si el hilillo en el nucleo (no ha finalizado) entonces encolar.
+             * vuelve al inicio
+            */
             while (desencolarHilillo(num_nucleo)) //mientras existan hilillos para desencolar
-            {   
-                /*
-                 * while:Mientras no termine el quantum o no haya finalizado 
-                 * obtiene el PC
-                 * carga instrucción
-                 * ejecuta instrucción
-                 * fin ciclo while
-                 * Si el hilillo en el nucleo (no ha finalizado) entonces encolar.
-                 * vuelve al inicio
-                */ 
+            {
+                int current_time = reloj;
+                //mientras no se le termine el quantum o no haya completado todas las instrucciones->continuar
+                while (reloj<(current_time+quantum)&&nucleos[num_nucleo].getFinalizado()==false)
+                {
+                    int [] instruccion = this.obtener_instruccion(num_nucleo);
+                    barrera_inicio_instruccion.SignalAndWait();
+                    this.ejecutarInstruccion(instruccion[0], instruccion[1], instruccion[2], instruccion[3]);
+                    barrera_fin_instruccion.SignalAndWait();
+                }
             }
         }
 
+        public int[] obtener_instruccion(int nucleo)
+        {
+            int pc = nucleos[nucleo].obtenerPc();
+            int num_bloque = pc / 16;
+            int num_palabra = (pc % 16) / 4;
+            int ind_cache = num_bloque % 4;
+            int[] instruccion = new int[4];
+            bool hit = cache_L1_instr[nucleo].hit(num_bloque, ind_cache);
+            if (hit)//significa que el bloque ya está en caché
+            {
+                Instruccion inst_temp=cache_L1_instr[nucleo].getInstruccion(num_palabra,ind_cache);
+                for (int i = 0; i < 4; i++)
+                    instruccion[i] = inst_temp.getParteInstruccion(i);
+            }
+            else//el bloque no está en caché, hay que subirlo. 40 ciclos. 
+            {
+                //No está en caché: hay que subirlo de memoria.
+                BloqueInstrucciones temp_bloque_mem = memoria_instrucciones[num_bloque];
+                cache_L1_instr[nucleo].setBloque(temp_bloque_mem,num_bloque,ind_cache);
+                for (int i = 0; i < 4; i++)
+                    instruccion[i] = temp_bloque_mem.getInstruccion(num_palabra).getParteInstruccion(i);
+                barrera_inicio_aumento_reloj.SignalAndWait();
+                if (Monitor.TryEnter(reloj))
+                {
+                    for (int i = 0; i < 40; i++)
+                    {
+                        reloj++;
+                    }
+                }
+                //que ambos lleguen a este punto indica que ya pasaron por el aumentar reloj
+                //lo cual solo uno pudo hacerlo, por lo tanto posterior a este monitor se puede liberar
+                barrera_fin_aumento_reloj.SignalAndWait();
+                Monitor.Exit(reloj);
+                //aquí hay que simular el aumento de reloj
+            }
 
-        // Método "Ejecutarse" en el diseño
+            return instruccion;
+        }
+
+
+            // Método "Ejecutarse" en el diseño
         public void ejecutarInstruccion(int CodigoOperacion, int op1, int op2, int op3) {
             // 
 
@@ -216,6 +276,9 @@ namespace ProcesadorMIPS
                  *  R[op2] = R[op1] + op3
                  */
                 case 8:
+                    barrera_inicio_instruccion.SignalAndWait();
+                    //ejecución
+                    barrera_fin_instruccion.SignalAndWait();
                     break;
                 /* DADD 
                  * Si(op2 == 0): 
@@ -223,6 +286,7 @@ namespace ProcesadorMIPS
                  *  R[op3] = R[op1] + R[op2]
                  */
                 case 32:
+
                     break;
                 /* DSUB
                  * Si(op2 == 0):

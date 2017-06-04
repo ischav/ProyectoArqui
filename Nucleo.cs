@@ -12,17 +12,37 @@ namespace ProcesadorMIPS
         const int INVALIDO = -1;
         const int COMPARTIDO = 0;
         const int MODIFICADO = 1;
-        
+
+        //registros en el nucleo
         public int[] registros_nucleo;
 
-        // Program Counter
+        // Program Counter, registro 32
         public int pc_nucleo;
 
+        public bool finalizado;
 
         public Nucleo() {
+            finalizado = false;
             registros_nucleo = new int[32];
         }
         
+        /*
+         * modifica el estado del nucleo a finalizado "el hilillo terminó"
+        */
+        public void setFinalizado(bool estado)
+        {
+            finalizado = estado;
+        }
+
+        /*
+         * modifica el estado del nucleo a finalizado "el hilillo terminó"
+        */
+        public bool getFinalizado()
+        {
+            return finalizado;
+        }
+
+
 
         /*
         *Asigna los registros y el contexto al nucleo

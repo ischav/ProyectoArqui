@@ -174,10 +174,19 @@ namespace ProcesadorMIPS
             return bloques[indice_cache];
         }
 
+
+
         public int getNumBloque(int indice_cache)
         {
             return num_bloques[indice_cache];
         }
+
+        public Instruccion getInstruccion(int palabra, int indice_cache)
+        {
+            return bloques[indice_cache].getInstruccion(palabra);
+        }
+
+
         public bool hit(int nuevo_num_bloque, int indice_cache)
         {
             if (nuevo_num_bloque == num_bloques[indice_cache])
