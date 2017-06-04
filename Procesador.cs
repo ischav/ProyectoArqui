@@ -13,18 +13,25 @@ namespace ProcesadorMIPS
      */
     class Procesador
     {
-
         //variables que pertenecen a procesador
         public BloqueDatos[] memoria_datos;
         public CacheDatos cache_L2;
         public BloqueInstrucciones[] memoria_instrucciones;
+
         int reloj;
         int  quantum, cantidad_hilillos;
+        
+        /* Estados de los bloques en la caché
+         * - Inválido
+         * - Compartido
+         * - Modificado
+         */
         const int INVALIDO = -1;
         const int COMPARTIDO = 0;
         const int MODIFICADO = 1;
+
         Nucleo []nucleos; //contiene ambos nucleos de la maquina
-        Queue<Hilillo> cola_hilillos;//cola de donde los nucleos obtienen hilillos para ejecutar
+        Queue<Hilillo> cola_hilillos; //cola de donde los nucleos obtienen hilillos para ejecutar
 
         //Barreras de la simulación
         public static Barrier barrera_inicio_instruccion;
@@ -35,32 +42,42 @@ namespace ProcesadorMIPS
         //variables que pertenecen al nucleo
         public CacheDatos[] cache_L1_datos;
         public CacheInstrucciones[] cache_L1_instr;
+
         /*
          * Contructor de la clase
-         * inicializa las variables
+         * Inicializa las variables
         */
         public Procesador()
         {
             reloj = 0;
             quantum = 0;
-            // Memoria Instrucciones = 40 bloques, 4 palabras por bloque, 4 cantidad de numeros por instruccion.
+
+            /* La memoria principal se define como dos vectores
+             * - Memoria de instrucciones = Vector de 40 bloques de instrucciones,
+             *   donde cada posición del vector almacena un vector correspondiente
+             *  al bloque.
+             * - Memoria de datos = Vector de 24 bloques, donde cada bloque contiene
+             *   4 palabras.
+             */
             memoria_instrucciones = new BloqueInstrucciones[40];
-            // Memomia Datos = 24 bloques, 4 palabras.
             memoria_datos = new BloqueDatos[24];
-            // Cache L2 Compartida = 8 bloques, 4 palabras, estado y numero de bloque en memoria principal.
+
+            /* Caché Nivel 2 Compartida
+             * Contiene 8 bloques
+             */
             cache_L2 = new CacheDatos(8);
             
-
-
-            //Se crean los nucleos y sus caches
+            // Se crean los nucleos y sus caches
             nucleos = new Nucleo[2];
             cache_L1_datos = new CacheDatos[2];
             cache_L1_instr = new CacheInstrucciones[2];
 
-            //Se inicializa la cola donde serán almacenados los hilillos
+            // Se inicializa la cola donde serán almacenados los hilillos
             cola_hilillos = new Queue<Hilillo>();
 
-            //barrera que controla el quantum ya que una instrucción equivale a un elemento del quantum
+            /* Barreras que controlan el quantum, ya que una instrucción 
+             * equivale a un elemento del quantum
+             */
             barrera_inicio_instruccion = new Barrier(participantCount: 2);
             barrera_fin_instruccion = new Barrier(participantCount: 2);
             barrera_inicio_aumento_reloj = new Barrier(participantCount: 2);
@@ -75,7 +92,6 @@ namespace ProcesadorMIPS
             this.cantidad_hilillos = num_hilillos;
         }
         
-
         public void asignarQuantum(int q)
         {
             this.quantum = q;
@@ -89,9 +105,9 @@ namespace ProcesadorMIPS
             
             for (int i = 0; i < 40; i++) {
                 memoria_instrucciones[i] = new BloqueInstrucciones();
-                //Se inicializa la memoria de instrucciones en 1. TODO
+                // Por ahora está en cero para probar hilillos "Simples"
+                // Se inicializa la memoria de instrucciones en 1. TODO
             }
-
             
             for (int i = 0; i < 24; i++){
                 memoria_datos[i] = new BloqueDatos();
@@ -102,7 +118,6 @@ namespace ProcesadorMIPS
 
         /*
          * Metodo para inicializar las memorias caché
-         * 
          */
         public void IniciarNucleos()
         {
@@ -110,9 +125,7 @@ namespace ProcesadorMIPS
             {
                 //se inicializan los núcleos
                 nucleos[i] = new Nucleo();
-                // Cache L1 Instrucciones = 4 bloques, 4 palabras, 4 numeros por instruccion.
                 cache_L1_datos[i] = new CacheDatos(4);
-                // Cache L1 Datos = 4 bloques, 6 donde 4 son palabras, estado y numero del bloque.
                 cache_L1_instr[i] = new CacheInstrucciones();
             }
         }
@@ -142,7 +155,7 @@ namespace ProcesadorMIPS
                     instruccion_string = line.Split(' '); //Separa la instruccion en los 4 números
 
                     for (int j = 0; j < 4; j++) {
-                        instruccion[j] = Convert.ToInt32(instruccion_string[j]); //asigna el numero en la matriz.
+                        instruccion[j] = Convert.ToInt32(instruccion_string[j]); //asigna el numero en el vector.
                     }
                     memoria_instrucciones[bloque].setInstruccion(instruccion,palabra);
                     dir_memoria += 4; // suma el contador para el PC.
@@ -151,7 +164,6 @@ namespace ProcesadorMIPS
                 crearHilillo(i,inicio,fin);
             }
         }
-
 
         /*Metodo que crea un hilillo
          * le asigna el espacio de direcciones de las instrucciones (inicio, fin)
@@ -167,10 +179,9 @@ namespace ProcesadorMIPS
         }
 
 
-
         /*
          * Retorna verdadero si se pudo desencolar un hilillo
-         * En caso de retornar verdero el nucleo contiene los datos del nuevo hilillo
+         * En caso de retornar verdero, el nucleo contiene los datos del nuevo hilillo
         */ 
         public bool desencolarHilillo(int num_nucleo)
         {
@@ -200,7 +211,7 @@ namespace ProcesadorMIPS
         public void inicializar(object nucleo)
         {
             int num_nucleo = Convert.ToInt32(nucleo);
-            Console.WriteLine("iniciando el núcleo: "+ Convert.ToString(num_nucleo));
+            Console.WriteLine("Iniciando el núcleo: "+ Convert.ToString(num_nucleo));
             /*
              * while:Mientras no termine el quantum o no haya finalizado 
              * obtiene el PC
@@ -214,11 +225,11 @@ namespace ProcesadorMIPS
             {
                 int current_time = reloj;
                 //mientras no se le termine el quantum o no haya completado todas las instrucciones->continuar
-                while (reloj<(current_time+quantum)&&nucleos[num_nucleo].getFinalizado()==false)
+                while (reloj < (current_time + quantum) && nucleos[num_nucleo].getFinalizado() == false)
                 {
                     int [] instruccion = this.obtener_instruccion(num_nucleo);
                     barrera_inicio_instruccion.SignalAndWait();
-                    this.ejecutarInstruccion(instruccion[0], instruccion[1], instruccion[2], instruccion[3]);
+                    this.ejecutarInstruccion(num_nucleo, instruccion[0], instruccion[1], instruccion[2], instruccion[3]);
                     barrera_fin_instruccion.SignalAndWait();
                 }
             }
@@ -234,13 +245,12 @@ namespace ProcesadorMIPS
             bool hit = cache_L1_instr[nucleo].hit(num_bloque, ind_cache);
             if (hit)//significa que el bloque ya está en caché
             {
-                Instruccion inst_temp=cache_L1_instr[nucleo].getInstruccion(num_palabra,ind_cache);
+                Instruccion inst_temp = cache_L1_instr[nucleo].getInstruccion(num_palabra,ind_cache);
                 for (int i = 0; i < 4; i++)
                     instruccion[i] = inst_temp.getParteInstruccion(i);
             }
-            else//el bloque no está en caché, hay que subirlo. 40 ciclos. 
+            else//el bloque no está en caché, hay que subirlo desde memoria. 40 ciclos. 
             {
-                //No está en caché: hay que subirlo de memoria.
                 BloqueInstrucciones temp_bloque_mem = memoria_instrucciones[num_bloque];
                 cache_L1_instr[nucleo].setBloque(temp_bloque_mem,num_bloque,ind_cache);
                 for (int i = 0; i < 4; i++)
@@ -265,10 +275,10 @@ namespace ProcesadorMIPS
 
 
             // Método "Ejecutarse" en el diseño
-        public void ejecutarInstruccion(int CodigoOperacion, int op1, int op2, int op3) {
+        public void ejecutarInstruccion(int id_nucleo, int codigo_operacion, int op1, int op2, int op3) {
             // 
 
-            switch (CodigoOperacion)
+            switch (codigo_operacion)
             {
                 /* DADDI
                  * Si(op2 == 0):
@@ -276,9 +286,11 @@ namespace ProcesadorMIPS
                  *  R[op2] = R[op1] + op3
                  */
                 case 8:
-                    barrera_inicio_instruccion.SignalAndWait();
                     //ejecución
-                    barrera_fin_instruccion.SignalAndWait();
+                    if (op2 == 0)
+                        Console.WriteLine("El registro 0 es inválido como destino.");
+                    nucleos[id_nucleo].asignarRegistro(nucleos[id_nucleo].obtenerRegistro(op1) + op3, op2);
+                    //considerar ciclos de reloj
                     break;
                 /* DADD 
                  * Si(op2 == 0): 

@@ -43,11 +43,9 @@ namespace ProcesadorMIPS
         }
 
 
-
         /*
-        *Asigna los registros y el contexto al nucleo
-        *
-        */
+         * *Asigna los registros y el contexto al nucleo
+         */
         public void asignarContexto(int[] reg)
         {
             for (int i = 0; i < 32; i++)
@@ -72,6 +70,16 @@ namespace ProcesadorMIPS
         public int[] obtenerRegistros()
         {
             return registros_nucleo;
+        }
+
+        public int obtenerRegistro(int num_reg)
+        {
+            return registros_nucleo[num_reg];
+        }
+
+        public void asignarRegistro(int value, int num_reg)
+        {
+            registros_nucleo[num_reg] = value;
         }
 
     }

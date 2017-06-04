@@ -17,14 +17,12 @@ namespace ProcesadorMIPS
         int ciclos_reloj_hilillo;//cantidad de ciclos de reloj asignadas al hilillo
         bool finalizado_hilillo;//indica el estado del hilillo
 
-
         /*
         *
         *
         */
         public Hilillo(int identificador)
         {
-            // Hay que considerar sacar PC del vector que maneja el contexto
             this.identificador_hilillo = identificador;
             inicio_hilillo = 0;
             fin_hilillo = 0;
