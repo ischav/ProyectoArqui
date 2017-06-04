@@ -163,14 +163,22 @@ namespace ProcesadorMIPS
         */ 
         public bool desencolarHilillo(int num_nucleo)
         {
-            if (cola_hilillos.Count>0)
+            bool pudo_desencolar = false;
+            while (true)
             {
-                Hilillo hilo_desencolado=cola_hilillos.Dequeue();
-                int[] contexto_hilo_desencolado = hilo_desencolado.obtenerContexto();
-                nucleos[num_nucleo].asignarContexto(contexto_hilo_desencolado);
+                if (Monitor.TryEnter(cola_hilillos))
+                {
+                    //sección critica
+                    if (cola_hilillos.Count > 0)
+                    {
+                        Hilillo hilo_desencolado = cola_hilillos.Dequeue();
+                        int[] contexto_hilo_desencolado = hilo_desencolado.obtenerContexto();
+                        nucleos[num_nucleo].asignarContexto(contexto_hilo_desencolado);
+                        pudo_desencolar = true;
+                    }
+                    return pudo_desencolar;
+                }
             }
-
-            return true;
         }
         
         /* Metodo principal de la simulación 
@@ -181,14 +189,20 @@ namespace ProcesadorMIPS
         {
             int num_nucleo = Convert.ToInt32(nucleo);
             Console.WriteLine("iniciando el núcleo: "+ Convert.ToString(num_nucleo));
-            while (this.cola_hilillos.Count>0) //mientras existan hilos en cola ejecutar
+            while (desencolarHilillo(num_nucleo)) //mientras existan hilillos para desencolar
             {   
-                if (desencolarHilillo(num_nucleo))
-                {
-                    
-                }
+                /*
+                 * while:Mientras no termine el quantum o no haya finalizado 
+                 * obtiene el PC
+                 * carga instrucción
+                 * ejecuta instrucción
+                 * fin ciclo while
+                 * Si el hilillo en el nucleo (no ha finalizado) entonces encolar.
+                 * vuelve al inicio
+                */ 
             }
         }
+
 
         // Método "Ejecutarse" en el diseño
         public void ejecutarInstruccion(int CodigoOperacion, int op1, int op2, int op3) {
