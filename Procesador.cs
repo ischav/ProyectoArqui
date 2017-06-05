@@ -14,6 +14,7 @@ namespace ProcesadorMIPS
     class Procesador
     {
         //variables que pertenecen a procesador
+        public int aumento_reloj;
         public BloqueDatos[] memoria_datos;
         public CacheDatos cache_L2;
         public BloqueInstrucciones[] memoria_instrucciones;
@@ -50,6 +51,7 @@ namespace ProcesadorMIPS
         public Procesador()
         {
             reloj = 0;
+            aumento_reloj = -1;
             quantum = 0;
 
             /* La memoria principal se define como dos vectores
@@ -183,7 +185,7 @@ namespace ProcesadorMIPS
          * Retorna verdadero si se pudo desencolar un hilillo
          * En caso de retornar verdero, el nucleo contiene los datos del nuevo hilillo
         */ 
-        public bool desencolarHilillo(int num_nucleo)
+        public bool desencolarHilillo(int id_nucleo)
         {
             bool pudo_desencolar = false;
             while (true)
@@ -195,7 +197,7 @@ namespace ProcesadorMIPS
                     {
                         Hilillo hilo_desencolado = cola_hilillos.Dequeue();
                         int[] contexto_hilo_desencolado = hilo_desencolado.obtenerContexto();
-                        nucleos[num_nucleo].asignarContexto(contexto_hilo_desencolado);
+                        nucleos[id_nucleo].asignarContexto(contexto_hilo_desencolado);
                         pudo_desencolar = true;
                     }
                     Monitor.Exit(cola_hilillos);
@@ -210,8 +212,8 @@ namespace ProcesadorMIPS
         */
         public void inicializar(object nucleo)
         {
-            int num_nucleo = Convert.ToInt32(nucleo);
-            Console.WriteLine("Iniciando el núcleo: "+ Convert.ToString(num_nucleo));
+            int id_nucleo = Convert.ToInt32(nucleo);
+            Console.WriteLine("Iniciando el núcleo: "+ Convert.ToString(id_nucleo));
             /*
              * while:Mientras no termine el quantum o no haya finalizado 
              * obtiene el PC
@@ -221,52 +223,50 @@ namespace ProcesadorMIPS
              * Si el hilillo en el nucleo (no ha finalizado) entonces encolar.
              * vuelve al inicio
             */
-            while (desencolarHilillo(num_nucleo)) //mientras existan hilillos para desencolar
+            while (desencolarHilillo(id_nucleo)) //mientras existan hilillos para desencolar
             {
                 int current_time = reloj;
                 //mientras no se le termine el quantum o no haya completado todas las instrucciones->continuar
-                while (reloj < (current_time + quantum) && nucleos[num_nucleo].getFinalizado() == false)
+                while (reloj < (current_time + quantum) && nucleos[id_nucleo].getFinalizado() == false)
                 {
-                    int [] instruccion = this.obtener_instruccion(num_nucleo);
+                    int [] instruccion = this.obtener_instruccion(id_nucleo);
+                    //se espera que ambos esten listos para ejecutar la instrucción
                     barrera_inicio_instruccion.SignalAndWait();
-                    this.ejecutarInstruccion(num_nucleo, instruccion[0], instruccion[1], instruccion[2], instruccion[3]);
+                    //ejeución de la instrucción
+                    this.ejecutarInstruccion(id_nucleo, instruccion[0], instruccion[1], instruccion[2], instruccion[3]);
+                    //aumento del reloj para la instrucción
+                    aumentarReloj(id_nucleo);
+                    //se espera que ambos lleguen al final de la instrucción
                     barrera_fin_instruccion.SignalAndWait();
                 }
             }
         }
 
-        public int[] obtener_instruccion(int nucleo)
+        public int[] obtener_instruccion(int id_nucleo)
         {
-            int pc = nucleos[nucleo].obtenerPc();
+            int pc = nucleos[id_nucleo].obtenerPc();
             int num_bloque = pc / 16;
             int num_palabra = (pc % 16) / 4;
             int ind_cache = num_bloque % 4;
             int[] instruccion = new int[4];
-            bool hit = cache_L1_instr[nucleo].hit(num_bloque, ind_cache);
+            bool hit = cache_L1_instr[id_nucleo].hit(num_bloque, ind_cache);
             if (hit)//significa que el bloque ya está en caché
             {
-                Instruccion inst_temp = cache_L1_instr[nucleo].getInstruccion(num_palabra,ind_cache);
+                Instruccion inst_temp = cache_L1_instr[id_nucleo].getInstruccion(num_palabra,ind_cache);
                 for (int i = 0; i < 4; i++)
                     instruccion[i] = inst_temp.getParteInstruccion(i);
             }
             else//el bloque no está en caché, hay que subirlo desde memoria. 40 ciclos. 
             {
                 BloqueInstrucciones temp_bloque_mem = memoria_instrucciones[num_bloque];
-                cache_L1_instr[nucleo].setBloque(temp_bloque_mem,num_bloque,ind_cache);
+                cache_L1_instr[id_nucleo].setBloque(temp_bloque_mem,num_bloque,ind_cache);
                 for (int i = 0; i < 4; i++)
                     instruccion[i] = temp_bloque_mem.getInstruccion(num_palabra).getParteInstruccion(i);
-                barrera_inicio_aumento_reloj.SignalAndWait();
-                if (Monitor.TryEnter(reloj))
+
+                for (int i = 0; i < 40; i++)
                 {
-                    for (int i = 0; i < 40; i++)
-                    {
-                        reloj++;
-                    }
+                    aumentarReloj(id_nucleo);
                 }
-                //que ambos lleguen a este punto indica que ya pasaron por el aumentar reloj
-                //lo cual solo uno pudo hacerlo, por lo tanto posterior a este monitor se puede liberar
-                barrera_fin_aumento_reloj.SignalAndWait();
-                Monitor.Exit(reloj);
                 //aquí hay que simular el aumento de reloj
             }
 
@@ -274,10 +274,29 @@ namespace ProcesadorMIPS
         }
 
 
+        /*
+         * Aumenta los ciclos del reloj; esperando a que el nucleo llegue a este punto
+         * Solamente uno aumenta y libera
+        */
+        public void aumentarReloj(int id_nucleo)
+        {
+            barrera_inicio_aumento_reloj.SignalAndWait();
+            if (Monitor.TryEnter(reloj))
+            {
+                aumento_reloj = id_nucleo;
+                reloj++;
+            }
+            barrera_fin_aumento_reloj.SignalAndWait();
+            if (aumento_reloj == id_nucleo)
+            {
+                aumento_reloj = -1;
+                Monitor.Exit(reloj);
+            }
+        }
+
             // Método "Ejecutarse" en el diseño
         public void ejecutarInstruccion(int id_nucleo, int codigo_operacion, int op1, int op2, int op3) {
-            // 
-
+            nucleos[id_nucleo].aumentarPc();
             switch (codigo_operacion)
             {
                 /* DADDI
@@ -288,9 +307,14 @@ namespace ProcesadorMIPS
                 case 8:
                     //ejecución
                     if (op2 == 0)
+                    {
                         Console.WriteLine("El registro 0 es inválido como destino.");
-                    nucleos[id_nucleo].asignarRegistro(nucleos[id_nucleo].obtenerRegistro(op1) + op3, op2);
-                    //considerar ciclos de reloj
+                    }
+                    else
+                    {
+                        nucleos[id_nucleo].asignarRegistro(nucleos[id_nucleo].obtenerRegistro(op1) + op3, op2);
+
+                    }
                     break;
                 /* DADD 
                  * Si(op2 == 0): 
@@ -298,7 +322,14 @@ namespace ProcesadorMIPS
                  *  R[op3] = R[op1] + R[op2]
                  */
                 case 32:
-
+                    if (op3 == 0)
+                    {
+                        Console.WriteLine("El registro 0 es inválido como destino.");
+                    }
+                    else
+                    {
+                        nucleos[id_nucleo].asignarRegistro(nucleos[id_nucleo].obtenerRegistro(op1) + nucleos[id_nucleo].obtenerRegistro(op2), op3);
+                    }
                     break;
                 /* DSUB
                  * Si(op2 == 0):
@@ -306,6 +337,14 @@ namespace ProcesadorMIPS
                  *  R[op3] = R[op1] - R[op2]
                  */
                 case 34:
+                    if (op3 == 0)
+                    {
+                        Console.WriteLine("El registro 0 es inválido como destino.");
+                    }
+                    else
+                    {
+                        nucleos[id_nucleo].asignarRegistro(nucleos[id_nucleo].obtenerRegistro(op1) - nucleos[id_nucleo].obtenerRegistro(op2), op3);
+                    }
                     break;
                 /* DMUL
                  * Si(op2 == 0):
@@ -313,36 +352,63 @@ namespace ProcesadorMIPS
                  *  R[op3] = R[op1] * R[op2]
                  */
                 case 12:
+                    if (op3 == 0)
+                    {
+                        Console.WriteLine("El registro 0 es inválido como destino.");
+                    }
+                    else
+                    {
+                        nucleos[id_nucleo].asignarRegistro(nucleos[id_nucleo].obtenerRegistro(op1) * nucleos[id_nucleo].obtenerRegistro(op2), op3);
+                    }
                     break;
                 /* DDIV
                  * Si(op2 == 0):
                  *  “El registro 0 es inválido.”
                  *  R[op3] = R[op1] / R[op2]
                  */
-                case 14:
+                case 14://se guarda un resultado entero?
+                    if (op3 == 0)
+                    {
+                        Console.WriteLine("El registro 0 es inválido como destino.");
+                    }
+                    else
+                    {
+                        nucleos[id_nucleo].asignarRegistro(nucleos[id_nucleo].obtenerRegistro(op1) / nucleos[id_nucleo].obtenerRegistro(op2), op3);
+                    }
                     break;
                 /* BEQZ
                  * Si(R[op1] == 0):
                  *  PC += op3 * 4
                  */
                 case 4:
+                    if (nucleos[id_nucleo].obtenerRegistro(op1)==0)
+                    {
+                        nucleos[id_nucleo].asignarPc(nucleos[id_nucleo].obtenerPc()+(op3*4));
+                    }
                     break;
                 /* BNEZ
                  * Si(R[op1] != 0):
                  *  PC += op3 * 4
                  */
                 case 5:
+                    if (nucleos[id_nucleo].obtenerRegistro(op1) != 0)
+                    {
+                        nucleos[id_nucleo].asignarPc(nucleos[id_nucleo].obtenerPc() + (op3 * 4));
+                    }
                     break;
                 /* JAL
                  * R[31] = PC
                  * PC += op3
                  */
                 case 3:
+                    nucleos[id_nucleo].asignarRegistro(nucleos[id_nucleo].obtenerPc(), 31);
+                    nucleos[id_nucleo].asignarPc(nucleos[id_nucleo].obtenerPc()+op3);
                     break;
                 /* JR
                  * PC = R[op1];
                  */
                 case 2:
+                    nucleos[id_nucleo].asignarPc(nucleos[id_nucleo].obtenerRegistro(op1));
                     break;
                 /* FIN */
                 case 63:

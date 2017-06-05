@@ -63,6 +63,38 @@ namespace ProcesadorMIPS
             return pc_nucleo;
         }
 
+
+        /*
+        *
+        *
+        */
+        public void aumentarPc(int cantidad)
+        {
+            registros_nucleo[32] += cantidad;
+            pc_nucleo = registros_nucleo[32];
+        }
+
+        /*
+        *
+        *
+        */
+        public void aumentarPc()
+        {
+            registros_nucleo[32] += 4;
+            pc_nucleo = registros_nucleo[32];
+        }
+
+        /*
+        *
+        *
+        */
+        public void asignarPc(int new_contador)
+        {
+            registros_nucleo[32] = new_contador;
+            pc_nucleo = registros_nucleo[32];
+        }
+
+
         /*
         *
         *
