@@ -575,13 +575,14 @@ namespace ProcesadorMIPS
 
         public void imprimirColaHilillosFinalizados()
         {
+            Console.WriteLine("Entró aquí");
             string fileName = Path.GetFullPath(Directory.GetCurrentDirectory() + @"\ColaHilillosFinalizados.txt");
             Console.WriteLine(fileName);
             using (StreamWriter archivo = new StreamWriter(fileName))
             {
                 Queue<Hilillo> cola_aux = new Queue<Hilillo>(cola_hilillos_finalizados);
                 Hilillo aux = null;
-
+                archivo.WriteLine("Esto lo escribe...");
                 while (cola_aux.Count > 0)
                 {
                     aux = cola_aux.Dequeue();
