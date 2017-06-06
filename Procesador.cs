@@ -30,9 +30,11 @@ namespace ProcesadorMIPS
         const int INVALIDO = -1;
         const int COMPARTIDO = 0;
         const int MODIFICADO = 1;
+        const bool DEBUG = false;
 
         Nucleo []nucleos; //contiene ambos nucleos de la maquina
         Queue<Hilillo> cola_hilillos; //cola de donde los nucleos obtienen hilillos para ejecutar
+        Queue<Hilillo>  cola_hilillos_finalizados;
 
         //Barreras de la simulación
         public static Barrier barrera_inicio_instruccion;
@@ -76,6 +78,7 @@ namespace ProcesadorMIPS
 
             // Se inicializa la cola donde serán almacenados los hilillos
             cola_hilillos = new Queue<Hilillo>();
+            cola_hilillos_finalizados = new Queue<Hilillo>();
 
             /* Barreras que controlan el quantum, ya que una instrucción 
              * equivale a un elemento del quantum
@@ -84,6 +87,14 @@ namespace ProcesadorMIPS
             barrera_fin_instruccion = new Barrier(participantCount: 2);
             barrera_inicio_aumento_reloj = new Barrier(participantCount: 2);
             barrera_fin_aumento_reloj = new Barrier(participantCount: 2);
+        }
+
+        /*
+         * Metodos para obtener los núcleos luego de la ejecución
+        */
+        public Nucleo[] obtenerNucleos()
+        {
+            return nucleos;
         }
 
         /*
@@ -198,6 +209,8 @@ namespace ProcesadorMIPS
                         Hilillo hilo_desencolado = cola_hilillos.Dequeue();
                         int[] contexto_hilo_desencolado = hilo_desencolado.obtenerContexto();
                         nucleos[id_nucleo].asignarContexto(contexto_hilo_desencolado);
+                        nucleos[id_nucleo].setFinalizado(false);
+                        nucleos[id_nucleo].asignarIdentificadorHilillo(hilo_desencolado.obtenerIdentificadorHilillo());
                         pudo_desencolar = true;
                     }
                     Monitor.Exit(cola_hilillos);
@@ -205,7 +218,29 @@ namespace ProcesadorMIPS
                 }
             }
         }
-        
+
+        /*
+         * Encola en la cola de hilillos
+         * 
+        */
+        public void encolarHilillo(int id_nucleo)
+        {
+            int []registros=nucleos[id_nucleo].obtenerRegistros();
+            Hilillo nuevo_hilillo = new Hilillo(nucleos[id_nucleo].obtenerIdentificadorHilillo());
+            nuevo_hilillo.asignarContexto(registros);
+            bool encolado = false;
+            while (!encolado)
+            {
+                if (Monitor.TryEnter(cola_hilillos))
+                {
+                    //sección critica
+                    cola_hilillos.Enqueue(nuevo_hilillo);
+                    Monitor.Exit(cola_hilillos);
+                    encolado = true;
+                }
+            }
+        }
+
         /* Metodo principal de la simulación 
          * Una vez todo cargado en el procesador inicia la ejecución
          * recibe por parámetro el número de nucleo que se está llamando
@@ -251,10 +286,18 @@ namespace ProcesadorMIPS
                     current_quantum++;
                 }
                 //si no es finalizado entonces copiar contexto y encole.
-                imprimirMensaje("FIN DE QUANTUM O FINALIZADO ",id_nucleo);
+                if (nucleos[id_nucleo].getFinalizado() == false)
+                {
+                    //Aquí copiar contexto y encolar
+                    encolarHilillo(id_nucleo);
+                    imprimirMensaje("FIN DE QUANTUM ", id_nucleo);
+                }
             }
             //Remove participant
-
+            barrera_inicio_instruccion.RemoveParticipant();
+            barrera_fin_instruccion.RemoveParticipant();
+            barrera_inicio_aumento_reloj.RemoveParticipant();
+            barrera_fin_aumento_reloj.RemoveParticipant();
         }
 
         public int[] obtener_instruccion(int id_nucleo)
@@ -422,7 +465,22 @@ namespace ProcesadorMIPS
                     break;
                 /* FIN */
                 case 63:
-                    //imprimirMensaje("FIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIINNNNNNNNNNNNNNNNNNNNNNNNNNNNNN",id_nucleo);
+                    nucleos[id_nucleo].setFinalizado(true);
+                    int[] registros = nucleos[id_nucleo].obtenerRegistros();
+                    Hilillo nuevo_hilillo = new Hilillo(nucleos[id_nucleo].obtenerIdentificadorHilillo());
+                    nuevo_hilillo.asignarContexto(registros);
+                    bool encolado = false;
+                    while (!encolado)
+                    {
+                        if (Monitor.TryEnter(cola_hilillos_finalizados))
+                        {
+                            //sección critica
+                            cola_hilillos_finalizados.Enqueue(nuevo_hilillo);
+                            Monitor.Exit(cola_hilillos_finalizados);
+                            encolado = true;
+                        }
+                    }
+                    Console.WriteLine("FINALIZADO "+id_nucleo);
                     //nucleos[id_nucleo].setFinalizado(true);
                     //barrera_inicio_instruccion.RemoveParticipant();
                     //barrera_fin_instruccion.RemoveParticipant();
@@ -456,7 +514,10 @@ namespace ProcesadorMIPS
 
         public void imprimirMensaje(String mensaje, int nucleo_id)
         {
-            Console.WriteLine(nucleo_id + ": "+ mensaje );
+            if (DEBUG)
+            {
+                Console.WriteLine(nucleo_id + ": " + mensaje);
+            }
         }
 
 

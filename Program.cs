@@ -66,6 +66,23 @@ namespace ProcesadorMIPS
             //se obtienen para recolectar sus dados
             Nucleo1.Join();
             Nucleo2.Join();
+            Nucleo[] nucleos=procesador.obtenerNucleos();
+            int[] registros_nucleo_1 = nucleos[0].obtenerRegistros();
+            int[] registros_nucleo_2 = nucleos[1].obtenerRegistros();
+            imprimirRegistros(registros_nucleo_1,1);
+            imprimirRegistros(registros_nucleo_2,2);
+
+        }
+
+        public static void imprimirRegistros(int[] registros_nucleo, int nucleo_id)
+        {
+            Console.WriteLine("Imprimiendo registros del nucleo "+nucleo_id+" después de la ejecución");
+            for (int i = 0; i < 33; i++)
+            {
+                Console.Write(registros_nucleo[i]+"::");
+            }
+            Console.WriteLine();
+
         }
 
         public static int obtenerCantidadHilillos()

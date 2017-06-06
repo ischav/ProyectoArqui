@@ -53,7 +53,7 @@ namespace ProcesadorMIPS
         *
         *
         */
-        public void asignarNumeroHilillo(int numero)
+        public void asignarIdentificadorHilillo(int numero)
         {
             this.identificador_hilillo = numero;
         }
@@ -63,7 +63,7 @@ namespace ProcesadorMIPS
         *
         *
         */
-        public int obtenerNumero_hil()
+        public int obtenerIdentificadorHilillo()
         {
             return identificador_hilillo;
         }
@@ -163,7 +163,7 @@ namespace ProcesadorMIPS
         *
         *
         */
-        public void asignarContexto(int contador_programa, int[] reg)
+        public void asignarContexto(int[] reg)
         {
 
             for (int i = 0; i < 33; i++)

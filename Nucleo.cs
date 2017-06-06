@@ -20,13 +20,31 @@ namespace ProcesadorMIPS
         public int pc_nucleo;
         public int quantum_hilillo;
         public bool finalizado;
+        public int identificador_hilillo;
 
         public Nucleo() {
             quantum_hilillo = 0;
             finalizado = false;
             registros_nucleo = new int[33];
+            identificador_hilillo = -1;
         }
-        
+        /*
+         * Obtener el identificador del hilillo
+        */
+        public int obtenerIdentificadorHilillo()
+        {
+            return identificador_hilillo; 
+       }
+
+        /*
+         * Asignar un identificador correspondiente al hilillo que se cargo en este núcleo
+        */
+        public void asignarIdentificadorHilillo(int id)
+        {
+            identificador_hilillo = id;
+        }
+
+
         /*
          * modifica el estado del nucleo a finalizado "el hilillo terminó"
         */
