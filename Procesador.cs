@@ -19,7 +19,7 @@ namespace ProcesadorMIPS
         public CacheDatos cache_L2;
         public BloqueInstrucciones[] memoria_instrucciones;
 
-        int reloj;
+        Reloj reloj;
         int  quantum, cantidad_hilillos;
         
         /* Estados de los bloques en la caché
@@ -50,7 +50,7 @@ namespace ProcesadorMIPS
         */
         public Procesador()
         {
-            reloj = 0;
+            reloj = new Reloj();
             aumento_reloj = -1;
             quantum = 0;
 
@@ -212,6 +212,7 @@ namespace ProcesadorMIPS
         */
         public void inicializar(object nucleo)
         {
+            
             int id_nucleo = Convert.ToInt32(nucleo);
             Console.WriteLine("Iniciando el núcleo: "+ Convert.ToString(id_nucleo));
             /*
@@ -225,25 +226,40 @@ namespace ProcesadorMIPS
             */
             while (desencolarHilillo(id_nucleo)) //mientras existan hilillos para desencolar
             {
-                int current_time = reloj;
+                imprimirMensaje("INICIO DESENCOLADO", id_nucleo);
+                int current_quantum = 0;
                 //mientras no se le termine el quantum o no haya completado todas las instrucciones->continuar
-                while (reloj < (current_time + quantum) && nucleos[id_nucleo].getFinalizado() == false)
+                while (current_quantum < quantum && nucleos[id_nucleo].getFinalizado() == false)
                 {
+                    imprimirMensaje("1 Main Entrando en ciclo quantum o no finalizado",id_nucleo);
                     int [] instruccion = this.obtener_instruccion(id_nucleo);
+                    imprimirMensaje("2 Main Posterior a obtener la instrucción ", id_nucleo);
                     //se espera que ambos esten listos para ejecutar la instrucción
+                    imprimirMensaje("3 Main Previo a barrera_inicio_instruccion ", id_nucleo);
                     barrera_inicio_instruccion.SignalAndWait();
+                    imprimirMensaje("4 Main Posterior a barrera_inicio_instruccion, entrando en obtener instrucción ", id_nucleo);
                     //ejeución de la instrucción
                     this.ejecutarInstruccion(id_nucleo, instruccion[0], instruccion[1], instruccion[2], instruccion[3]);
+                    imprimirMensaje("5 Main Posterior a obtener instrucción, aumentando el reloj ", id_nucleo);
                     //aumento del reloj para la instrucción
                     aumentarReloj(id_nucleo);
+                    imprimirMensaje("6 Main Posterior a aumentar el reloj, entrando en barrera barrera_fin_instruccion", id_nucleo);
                     //se espera que ambos lleguen al final de la instrucción
                     barrera_fin_instruccion.SignalAndWait();
+                    imprimirMensaje("7 Main Posterior a barrera barrera_fin_instruccion, reiniciando ciclo", id_nucleo);
+                    imprimirMensaje("8 Main instrucción numero", current_quantum);
+                    current_quantum++;
                 }
+                //si no es finalizado entonces copiar contexto y encole.
+                imprimirMensaje("FIN DE QUANTUM O FINALIZADO ",id_nucleo);
             }
+            //Remove participant
+
         }
 
         public int[] obtener_instruccion(int id_nucleo)
         {
+            imprimirMensaje("1 obtener_instruccion INICIO",id_nucleo);
             int pc = nucleos[id_nucleo].obtenerPc();
             int num_bloque = pc / 16;
             int num_palabra = (pc % 16) / 4;
@@ -252,47 +268,41 @@ namespace ProcesadorMIPS
             bool hit = cache_L1_instr[id_nucleo].hit(num_bloque, ind_cache);
             if (hit)//significa que el bloque ya está en caché
             {
+                imprimirMensaje("2 obtener_instruccion HIT inicio", id_nucleo);
                 Instruccion inst_temp = cache_L1_instr[id_nucleo].getInstruccion(num_palabra,ind_cache);
                 for (int i = 0; i < 4; i++)
                     instruccion[i] = inst_temp.getParteInstruccion(i);
+                imprimirMensaje("3 obtener_instruccion HIT fin", id_nucleo);
+
             }
             else//el bloque no está en caché, hay que subirlo desde memoria. 40 ciclos. 
             {
+                imprimirMensaje("4 obtener_instruccion MISS inicio", id_nucleo);
                 BloqueInstrucciones temp_bloque_mem = memoria_instrucciones[num_bloque];
                 cache_L1_instr[id_nucleo].setBloque(temp_bloque_mem,num_bloque,ind_cache);
                 for (int i = 0; i < 4; i++)
                     instruccion[i] = temp_bloque_mem.getInstruccion(num_palabra).getParteInstruccion(i);
 
+                imprimirMensaje("5 obtener_instruccion aumento reloj inicio", id_nucleo);
                 for (int i = 0; i < 40; i++)
                 {
+                    imprimirMensaje("6 obtener_instruccion Previo a barrera_inicio_instruccion ", id_nucleo);
+                    barrera_inicio_instruccion.SignalAndWait();
                     aumentarReloj(id_nucleo);
+                    imprimirMensaje("7 obtener_instruccion posterior a barrera_fin_instruccion ", id_nucleo);
+                    barrera_fin_instruccion.SignalAndWait();
                 }
+                imprimirMensaje("8 obtener_instruccion aumento reloj fin", id_nucleo);
                 //aquí hay que simular el aumento de reloj
+                imprimirMensaje("9 obtener_instruccion MISS fin", id_nucleo);
+
             }
 
             return instruccion;
         }
 
 
-        /*
-         * Aumenta los ciclos del reloj; esperando a que el nucleo llegue a este punto
-         * Solamente uno aumenta y libera
-        */
-        public void aumentarReloj(int id_nucleo)
-        {
-            barrera_inicio_aumento_reloj.SignalAndWait();
-            if (Monitor.TryEnter(reloj))
-            {
-                aumento_reloj = id_nucleo;
-                reloj++;
-            }
-            barrera_fin_aumento_reloj.SignalAndWait();
-            if (aumento_reloj == id_nucleo)
-            {
-                aumento_reloj = -1;
-                Monitor.Exit(reloj);
-            }
-        }
+
 
             // Método "Ejecutarse" en el diseño
         public void ejecutarInstruccion(int id_nucleo, int codigo_operacion, int op1, int op2, int op3) {
@@ -412,9 +422,45 @@ namespace ProcesadorMIPS
                     break;
                 /* FIN */
                 case 63:
+                    //imprimirMensaje("FIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIINNNNNNNNNNNNNNNNNNNNNNNNNNNNNN",id_nucleo);
+                    //nucleos[id_nucleo].setFinalizado(true);
+                    //barrera_inicio_instruccion.RemoveParticipant();
+                    //barrera_fin_instruccion.RemoveParticipant();
+                    //barrera_inicio_aumento_reloj.RemoveParticipant();
+                    //barrera_fin_aumento_reloj.RemoveParticipant();
+                    break;
+                default:
                     break;
             }
         }
+
+        /*
+ * Aumenta los ciclos del reloj; esperando a que el nucleo llegue a este punto
+ * Solamente uno aumenta y libera
+*/
+        public void aumentarReloj(int id_nucleo)
+        {
+            barrera_inicio_aumento_reloj.SignalAndWait();
+            if (Monitor.TryEnter(reloj))
+            {
+                aumento_reloj = id_nucleo;
+                reloj.aumentarReloj();
+            }
+            barrera_fin_aumento_reloj.SignalAndWait();
+            if (aumento_reloj == id_nucleo)
+            {
+                aumento_reloj = -1;
+                Monitor.Exit(reloj);
+            }
+        }
+
+        public void imprimirMensaje(String mensaje, int nucleo_id)
+        {
+            Console.WriteLine(nucleo_id + ": "+ mensaje );
+        }
+
+
+
         /*
         * Metodo para imprimir todos los datos actualmente en memoria y caché
        */

@@ -18,12 +18,13 @@ namespace ProcesadorMIPS
 
         // Program Counter, registro 32
         public int pc_nucleo;
-
+        public int quantum_hilillo;
         public bool finalizado;
 
         public Nucleo() {
+            quantum_hilillo = 0;
             finalizado = false;
-            registros_nucleo = new int[32];
+            registros_nucleo = new int[33];
         }
         
         /*
@@ -48,7 +49,7 @@ namespace ProcesadorMIPS
          */
         public void asignarContexto(int[] reg)
         {
-            for (int i = 0; i < 32; i++)
+            for (int i = 0; i < 33; i++)
                 registros_nucleo[i] = reg[i];
                 //se asigna el PC
                 pc_nucleo = reg[32];
@@ -62,6 +63,34 @@ namespace ProcesadorMIPS
         {
             return pc_nucleo;
         }
+
+        /*
+*
+*
+*/
+        public void asignarQuantum(int valor)
+        {
+            quantum_hilillo = valor;
+        }
+
+        /*
+        *
+        *
+        */
+        public void aumentarQuantum()
+        {
+            quantum_hilillo++;
+        }
+
+        /*
+        *
+        *
+        */
+        public int obtenerQuantum()
+        {
+            return quantum_hilillo;
+        }
+
 
 
         /*

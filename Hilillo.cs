@@ -29,7 +29,7 @@ namespace ProcesadorMIPS
             pc_hilillo = 0;
             nucleo_hilillo = -1; // Para que inicialmente no pertenezca a ninguno
             finalizado_hilillo = false;
-            registros_hilillo = new int[32];
+            registros_hilillo = new int[33];
             for (int i = 0; i < registros_hilillo.Length; i++)
             {
                 registros_hilillo[i] = 0;
@@ -46,6 +46,7 @@ namespace ProcesadorMIPS
         public void Inicializar(int identificador) {
 
         }
+
 
 
         /*

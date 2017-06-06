@@ -51,6 +51,8 @@ namespace ProcesadorMIPS
             // Se inicia la simulación nucleo 1 y 2
             Thread Nucleo1 = new Thread(procesador.inicializar);
             Thread Nucleo2 = new Thread(procesador.inicializar);
+            Nucleo1.Name="1";
+            Nucleo2.Name = "2";
 
             //ejecución de ambos núcleos
             Nucleo1.Start(0);

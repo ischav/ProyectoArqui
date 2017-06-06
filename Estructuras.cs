@@ -6,6 +6,31 @@ using System.Threading.Tasks;
 
 namespace ProcesadorMIPS
 {
+    public class Reloj
+    {
+        int reloj;
+        public Reloj()
+        {
+            reloj = 0;
+        }
+
+        public int obtenerReloj()
+        {
+            return reloj;
+        }
+
+        public void asignarReloj(int cantidad)
+        {
+            reloj += cantidad;
+        }
+
+        public void aumentarReloj()
+        {
+            reloj++;
+        }
+    }
+
+
 
     public class Instruccion {
         int[] instruccion;
