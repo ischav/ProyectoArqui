@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Threading;
+using System.IO;
 
 namespace ProcesadorMIPS
 {
@@ -520,66 +521,92 @@ namespace ProcesadorMIPS
             }
         }
 
+        /* ------------------------------------------------------------------------------------------
+         *                               Métodos para imprimir 
+         *             Los archivos generados se encuentra en ...\ProyectoArqui\bin\Debug
+         * ------------------------------------------------------------------------------------------ */
 
+        public void imprimirRegistros()
+        {
+            string fileName = Path.GetFullPath(Directory.GetCurrentDirectory() + @"\Nucleos.txt");
+            Console.WriteLine(fileName);
+            using (StreamWriter archivo = new StreamWriter(fileName))
+            {
+                {
+                    for (int i = 0; i < 2; i++)
+                    {
+                        archivo.WriteLine("\n================== Estado del Núcleo " + i + " ==================\n");
+                        archivo.WriteLine("Contador de programa: " + nucleos[i].obtenerPc());
+                        archivo.WriteLine("Estado de los registros");
+                        for (int k = 0; k < 32; k++)
+                        {
+                            archivo.WriteLine("R[" + k + "] : " + nucleos[i].obtenerRegistro(k));
+                        }
+                    }
+                }
+            }
 
-        /*
-        * Metodo para imprimir todos los datos actualmente en memoria y caché
-       */
-        /*       public string imprimirMemoriaEstructuras()
-               {
-                   string datos = "";
-                   datos += "\nMemoria principal de instrucciones\n";
-                   for (int i = 0; i < 40; i++)
-                   {
-                       for (int j = 0; j < 4; j++)
-                       {
-                           for (int k = 0; k < 4; k++)
-                           {
-                               datos += Convert.ToString(memoria_instrucciones[i,j,k])+" | ";
-                           }
-                       }
-                   }
+        }
 
-                   datos += "\nMemoria principal de datos\n";
-                   for (int i = 0; i < 24; i++)
-                   {
-                       for (int j = 0; j < 4; j++)
-                       {
-                           datos+=Convert.ToString(memoria_datos[i, j])+" | ";
-                       }
-                   }
+        public void imprimirColaHilillos()
+        {
+            string fileName = Path.GetFullPath(Directory.GetCurrentDirectory() + @"\ColaHilillos.txt");
+            Console.WriteLine(fileName);
+            using (StreamWriter archivo = new StreamWriter(fileName))
+            {
+                Queue<Hilillo> cola_aux = new Queue<Hilillo>(cola_hilillos);
+                Hilillo aux = null;
 
-                   for(int q = 0; q < 2; q++)
-                   {
-                       //se obtienen las matrices
-                       int[,] l1_datos = nucleos[q].obtenerL1Datos();
-                       int[,,] l1_inst = nucleos[q].obtenerL1Instrucciones();
-                       //se obtienen los datos de las matrices
-                       datos += "\nL1 de instrucciones\n";
-                       for (int i = 0; i < 4; i++)
-                       {
-                           for (int j = 0; j < 4; j++)
-                           {
-                               for (int k = 0; k < 4; k++)
-                               {
-                                   datos += Convert.ToString(l1_inst[i, j, k]) + " | ";
-                               }
-                           }
-                       }
+                while (cola_aux.Count > 0)
+                {
+                    aux = cola_aux.Dequeue();
+                    archivo.WriteLine("Numero hilillo: " + aux.obtenerIdentificadorHilillo());
+                    Console.WriteLine("Numero hilillo: " + aux.obtenerIdentificadorHilillo());
+                    archivo.WriteLine("El hilillo inicia en la dirección: M[" + aux.obtenerInicioHilillo() + "]");
+                    archivo.WriteLine("El hilillo finaliza en la dirección: M[" + aux.obtenerFinHilillo() + "]");
+                    archivo.WriteLine("Finalizado: " + aux.obtenerFinalizado());
+                    archivo.WriteLine("Program Counter: " + aux.obtenerPC() + "\n");
 
-                       datos += "\nL1de datos\n";
-                       for (int i = 0; i < 4; i++)
-                       {
-                           for (int j = 0; j < 6; j++)
-                           {
-                               datos += Convert.ToString(l1_datos[i, j]) + " | ";
-                           }
-                       }
+                    for (int i = 0; i < 32; i++)
+                        archivo.WriteLine("R[" + i + "] = " + aux.obtenerRegistros()[i] + "\n");
+                }
+            }
+        }
 
-                   }
+        public void imprimirColaHilillosFinalizados()
+        {
+            string fileName = Path.GetFullPath(Directory.GetCurrentDirectory() + @"\ColaHilillosFinalizados.txt");
+            Console.WriteLine(fileName);
+            using (StreamWriter archivo = new StreamWriter(fileName))
+            {
+                Queue<Hilillo> cola_aux = new Queue<Hilillo>(cola_hilillos_finalizados);
+                Hilillo aux = null;
 
-                   return datos;
-               }*/
+                while (cola_aux.Count > 0)
+                {
+                    aux = cola_aux.Dequeue();
+                    archivo.WriteLine("Numero hilillo: " + aux.obtenerIdentificadorHilillo());
+                    archivo.WriteLine("El hilillo inicia en la dirección: M[" + aux.obtenerInicioHilillo() + "]");
+                    archivo.WriteLine("El hilillo finaliza en la dirección: M[" + aux.obtenerFinHilillo() + "]");
+                    archivo.WriteLine("Finalizado: " + aux.obtenerFinalizado());
+                    archivo.WriteLine("Program Counter: " + aux.obtenerPC() + "\n");
+                    archivo.WriteLine("Ciclos de reloj: " + aux.obtenerCiclosReloj() + "\n");
+
+                    for (int i = 0; i < 32; i++)
+                        archivo.WriteLine("R[" + i + "] = " + aux.obtenerRegistros()[i] + "\n");
+                }
+            }
+        }
+
+        public void imprimirMemoriaInstrucciones()
+        {
+
+        }
+
+        public void imprimirMemoriaDatos()
+        {
+
+        }
 
     }
 }
