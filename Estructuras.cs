@@ -151,6 +151,15 @@ namespace ProcesadorMIPS
             estados[indice_cache] = 0; //Compartido
             num_bloques[indice_cache] = nuevo_num_bloque;
         }
+        public void setBloqueEnteros(int[] nuevo_bloque, int nuevo_num_bloque, int indice_cache) {
+            bloques[indice_cache].setPalabras(nuevo_bloque);
+            estados[indice_cache] = 0; //Compartido
+            num_bloques[indice_cache] = nuevo_num_bloque;
+        }
+
+        public void escribirPalabra(int indice_cache, int dato, int palabra) {
+            bloques[indice_cache].setPalabra(dato, palabra);
+        }
 
         public BloqueDatos getBloque(int indice_cache) {
             return bloques[indice_cache];
@@ -167,10 +176,19 @@ namespace ProcesadorMIPS
         {
             return num_bloques[indice_cache];
         }
-        public bool hit(int nuevo_num_bloque, int indice_cache)
+
+        public int getPalabraBloque(int palabra, int indice_cache) {
+            BloqueDatos nuevo_bloque = bloques[indice_cache];
+            return nuevo_bloque.getPalabra(palabra);
+
+        }
+        public bool hit(int nuevo_num_bloque, int indice_cache) //compartido = 0, modificado = 1 
         {
-            if (nuevo_num_bloque == num_bloques[indice_cache])
-                return true;
+            if (estados[indice_cache] == 0 || estados[indice_cache] == 1) {
+                if (nuevo_num_bloque == num_bloques[indice_cache])
+                    return true;
+            }
+            
             return false;
         }
 

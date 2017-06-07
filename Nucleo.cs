@@ -18,6 +18,7 @@ namespace ProcesadorMIPS
 
         // Program Counter, registro 32
         public int pc_nucleo;
+        public int RL; 
         public int quantum_hilillo;
         public bool finalizado;
         public int identificador_hilillo;
@@ -27,6 +28,7 @@ namespace ProcesadorMIPS
             finalizado = false;
             registros_nucleo = new int[33];
             identificador_hilillo = -1;
+            RL = -1; // empieza en -1.
         }
         /*
          * Obtener el identificador del hilillo
@@ -159,6 +161,14 @@ namespace ProcesadorMIPS
         public void asignarRegistro(int value, int num_reg)
         {
             registros_nucleo[num_reg] = value;
+        }
+
+        public void asignarRL(int valor) {
+            RL = valor;
+        }
+
+        public int obtenerRL() {
+            return RL;
         }
 
     }
