@@ -385,6 +385,23 @@ namespace ProcesadorMIPS
                         nucleos[id_nucleo].asignarRegistro(nucleos[id_nucleo].obtenerRegistro(op1) + nucleos[id_nucleo].obtenerRegistro(op2), op3);
                     }
                     break;
+                /* LW
+                * 
+                * 
+                *                       
+                */
+                case 35:
+                    operacion_LW(id_nucleo, op1, op2, op3);
+                    break;
+
+                /* SW
+                * 
+                * 
+                *                       
+                */
+                case 43:
+                    operacion_SW(id_nucleo, op1, op2, op3);
+                    break;
                 /* DSUB
                  * Si(op2 == 0):
                  *  “El registro 0 es inválido como destino”
@@ -470,6 +487,7 @@ namespace ProcesadorMIPS
                     int[] registros = nucleos[id_nucleo].obtenerRegistros();
                     Hilillo nuevo_hilillo = new Hilillo(nucleos[id_nucleo].obtenerIdentificadorHilillo());
                     nuevo_hilillo.asignarContexto(registros);
+                    nuevo_hilillo.asignarFinalizado();
                     bool encolado = false;
                     while (!encolado)
                     {
@@ -482,16 +500,185 @@ namespace ProcesadorMIPS
                         }
                     }
                     Console.WriteLine("FINALIZADO "+id_nucleo);
-                    //nucleos[id_nucleo].setFinalizado(true);
-                    //barrera_inicio_instruccion.RemoveParticipant();
-                    //barrera_fin_instruccion.RemoveParticipant();
-                    //barrera_inicio_aumento_reloj.RemoveParticipant();
-                    //barrera_fin_aumento_reloj.RemoveParticipant();
                     break;
                 default:
                     break;
             }
         }
+
+        public void escribir(int id_nucleo, int ind_cache, int valor_registro_guardar, int num_palabra) {
+            cache_L1_datos[id_nucleo].escribirPalabra(ind_cache, valor_registro_guardar, num_palabra);
+        }
+
+        public void operacion_SW(int id_nucleo, int reg_fuente, int reg_a_guardar, int inmediato)
+        {
+            bool guardado = false;
+            int direccion = nucleos[id_nucleo].obtenerRegistro(reg_fuente) + inmediato; //Obtiene la dirección de memoria a cargar.
+            int num_bloque = direccion / 16; //numero de bloque
+            int num_palabra = (direccion % 16) / 4; // numero de palabra
+            int ind_cache = num_bloque % 4; //indice de cache para la chaché L1 de datos.
+            int valor_registro_guardar = nucleos[id_nucleo].obtenerRegistro(reg_a_guardar);
+            while (!guardado)
+            {
+                if (Monitor.TryEnter(cache_L1_datos[id_nucleo])) //intento bloquear caché
+                {
+                    if (cache_L1_datos[id_nucleo].hit(num_bloque, ind_cache)) //Si el bloque está en cache y está modificado o compartido, puedo leerlo.
+                    {
+                        if (cache_L1_datos[id_nucleo].getEstado(ind_cache) == MODIFICADO)
+                        { //Está modificado, puedo escribir en el.
+                            escribir(id_nucleo,ind_cache,valor_registro_guardar,num_palabra);
+                            Monitor.Exit(cache_L1_datos[id_nucleo]);
+                            guardado = true;
+                        }
+                        else { //Está compartido.
+                            if (Monitor.TryEnter(cache_L2))
+                            { //Pido candado para Cache L2, lo que significa que obtengo el bus y puedo trbajar con Cache L2 y memoria.
+                                int otro_nucleo = id_nucleo == 1 ? 0 : 1; //Para saber cual es el id del otro nucleo.
+                                if (Monitor.TryEnter(cache_L1_datos[otro_nucleo]))
+                                { //Pido candado para la otra cache L1;
+                                    if (cache_L1_datos[otro_nucleo].getNumBloque(ind_cache) == num_bloque && cache_L1_datos[otro_nucleo].getEstado(ind_cache) == COMPARTIDO) //Si está el bloque y está Compartido.
+                                    {
+                                        cache_L1_datos[otro_nucleo].setEstado(ind_cache, INVALIDO); //Invalido el bloque.
+                                    }
+                                    if (nucleos[otro_nucleo].obtenerRL() == num_bloque) { //Si el RL es igual a mi direccion de memoria entonces se pone en -1
+                                        nucleos[otro_nucleo].asignarRL(INVALIDO);
+                                    }
+                                    Monitor.Exit(cache_L1_datos[otro_nucleo]);
+
+
+
+                                }
+                                else
+                                {
+                                    Monitor.Exit(cache_L2);
+                                    Monitor.Exit(cache_L1_datos[id_nucleo]);
+                                    //aumento reloj
+                                }
+                            } else {
+                                Monitor.Exit(cache_L1_datos[id_nucleo]);
+                                //aumento reloj
+                            }
+                        }
+                        
+                    }
+                    else { //Fallo
+
+                    }
+                }
+                else
+                {
+                    //aumento de reloj;
+                }
+            }
+            //aumento de reloj. Fin de la instrucción.
+
+
+
+        }
+
+        /**
+         * Toma el dato del registro fuente lo suma con el inmediato y obtiene la direccion de memoria dada por esa suma.
+         * saca la palabra y la guarda en el registro destino. 
+         *          
+        */
+        public void operacion_LW(int id_nucleo, int reg_fuente, int reg_destino, int inmediato) {
+            bool cargado = false;
+            int direccion = nucleos[id_nucleo].obtenerRegistro(reg_fuente) + inmediato; //Obtiene la dirección de memoria a cargar.
+            int num_bloque = direccion / 16; //numero de bloque
+            int num_palabra = (direccion % 16) / 4; // numero de palabra
+            int ind_cache = num_bloque % 4; //indice de cache para la chaché L1 de datos.
+            
+
+            while (!cargado) {
+                if (Monitor.TryEnter(cache_L1_datos[id_nucleo])) //intento bloquear caché
+                {
+                    if (cache_L1_datos[id_nucleo].hit(num_bloque, ind_cache)) //Si el bloque está en cache y está modificado o compartido, puedo leerlo.
+                    {
+                        int resultado = cache_L1_datos[id_nucleo].getPalabraBloque(num_palabra, ind_cache); //Obtengo la palabra que quiero leer.
+                        nucleos[id_nucleo].asignarRegistro(resultado,reg_destino); //Asigno la palabra al registro destino.
+                        Monitor.Exit(cache_L1_datos[id_nucleo]);
+                        cargado = true;
+                    }
+                    else { //No hay acierto.
+                        int estado_bloque_a_caer = cache_L1_datos[id_nucleo].getEstado(ind_cache); //Obtengo el estado del bloque al que le voy a caer encima
+                        if (Monitor.TryEnter(cache_L2))
+                        { //Pido candado para Cache L2, lo que significa que obtengo el bus y puedo trbajar con Cache L2 y memoria.
+                            if (estado_bloque_a_caer == MODIFICADO)
+                            { // si está modificado hay que mandarlo a escribir a la siguiente estructura.
+                                BloqueDatos bloque_guardar = cache_L1_datos[id_nucleo].getBloque(ind_cache); //Obtengo el bloque que tengo que mandar a escribir.
+                                cache_L1_datos[id_nucleo].setEstado(ind_cache, INVALIDO); //Invalido el bloque en cache L1.
+                                //Se manda a escribir a L2 pero como L2 es No Write Allocate entonces se envia a escribir al siguiente nivel, osea, memoria.
+                                memoria_datos[num_bloque].setPalabras(bloque_guardar.getPalabras()); //Guardo el bloque en memoria.
+                                for (int i = 0; i< 48; i++) { //Se espera por los 8 tiempos que dura enviar a escribir a L2 y los 40 que dura en escribir en memoria.
+                                    //aumento de reloj
+                                }
+                            }
+                            int otro_nucleo = id_nucleo == 1 ? 0 : 1; //Para saber cual es el id del otro nucleo.
+                            if (Monitor.TryEnter(cache_L1_datos[otro_nucleo])) {
+                                if (cache_L1_datos[otro_nucleo].getNumBloque(ind_cache) == num_bloque && cache_L1_datos[otro_nucleo].getEstado(ind_cache) == MODIFICADO)
+                                {
+                                    //Lo mando a escribir a Memoria y a mi cache.
+                                    BloqueDatos bloque_guardar = cache_L1_datos[otro_nucleo].getBloque(ind_cache); //Obtengo el bloque que tengo que mandar a escribir.
+                                    cache_L1_datos[otro_nucleo].setEstado(ind_cache, COMPARTIDO); //Invalido el bloque en la otra cache L1.
+                                                                                                //Se manda a escribir a L2 pero como L2 es No Write Allocate entonces se envia a escribir al siguiente nivel, osea, memoria.
+                                    Monitor.Exit(cache_L1_datos[otro_nucleo]); //Libero la otra caché.
+                                    memoria_datos[num_bloque].setPalabras(bloque_guardar.getPalabras()); //Guardo el bloque en memoria.
+                                    cache_L1_datos[id_nucleo].setBloque(bloque_guardar, num_bloque, ind_cache); //Escribo en mi cache el bloque.
+                                    for (int i = 0; i < 48; i++)
+                                    { //Se espera por los 8 tiempos que dura enviar a escribir a L2 y los 40 que dura en escribir en memoria.
+                                      //aumento de reloj
+                                    }
+                                }
+                                else {
+                                    Monitor.Exit(cache_L1_datos[otro_nucleo]);
+                                    int ind_cache_L2 = num_bloque % 8; //indice de cache para la chaché L2 de datos.
+                                    if (cache_L2.getNumBloque(ind_cache_L2) != num_bloque || cache_L2.getEstado(ind_cache_L2) == INVALIDO) {
+                                        int[] bloque_memoria = memoria_datos[num_bloque].getPalabras(); //Obtengo el bloque de memoria.
+                                        cache_L2.setBloqueEnteros(bloque_memoria, num_bloque, ind_cache_L2); //Asigno el bloque a cache L2
+                                        for (int i = 0; i < 40; i++)
+                                        { //Se espera por los 40 ciclos que dura en escribir desde memoria.
+                                          //aumento de reloj
+                                        }
+                                    }
+                                    BloqueDatos bloque_cache_L2 = cache_L2.getBloque(ind_cache_L2);
+                                    cache_L1_datos[id_nucleo].setBloque(bloque_cache_L2,num_bloque,ind_cache);
+                                    for (int i = 0; i < 8; i++)
+                                    { //Se espera por los 8 tiempos que dura enviar desde L2 a L1.
+                                      //aumento de reloj
+                                    }
+
+                                    //Subir el bloque a mi cache.
+
+                                }
+
+                                Monitor.Exit(cache_L2);
+                                int resultado = cache_L1_datos[id_nucleo].getPalabraBloque(num_palabra, ind_cache); //Obtengo la palabra que quiero leer.
+                                nucleos[id_nucleo].asignarRegistro(resultado, reg_destino); //Asigno la palabra al registro destino.
+                                Monitor.Exit(cache_L1_datos[id_nucleo]);
+                                cargado = true;
+                                
+                            } else {
+                                Monitor.Exit(cache_L2);
+                                Monitor.Exit(cache_L1_datos[id_nucleo]);
+                                //aumento de reloj
+                            }
+                        }
+                        else {
+                            Monitor.Exit(cache_L1_datos[id_nucleo]);
+                            //aumento de reloj.
+                        }
+                    } 
+                }
+                else {
+                    //aumento de reloj;
+                }
+
+            }
+
+            //aumento de reloj
+        }
+
+
 
         /*
  * Aumenta los ciclos del reloj; esperando a que el nucleo llegue a este punto
