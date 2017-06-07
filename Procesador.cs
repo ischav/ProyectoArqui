@@ -31,7 +31,7 @@ namespace ProcesadorMIPS
         const int INVALIDO = -1;
         const int COMPARTIDO = 0;
         const int MODIFICADO = 1;
-        const bool DEBUG = true;
+        const bool DEBUG = false;
 
         Nucleo []nucleos; //contiene ambos nucleos de la maquina
         Queue<Hilillo> cola_hilillos; //cola de donde los nucleos obtienen hilillos para ejecutar
@@ -272,20 +272,17 @@ namespace ProcesadorMIPS
                     imprimirMensaje("2 Main Posterior a obtener la instrucción ", id_nucleo);
                     //se espera que ambos esten listos para ejecutar la instrucción
                     imprimirMensaje("3 Main Previo a barrera_inicio_instruccion ", id_nucleo);
-                    Console.WriteLine("Inicio instruccion, nucleo "+ id_nucleo);
-                    barrera_inicio_instruccion.SignalAndWait();
-                    Console.WriteLine("Inicio instruccion despues de barrera, nucleo " + id_nucleo);
+                    //barrera_inicio_instruccion.SignalAndWait();
                     imprimirMensaje("4 Main Posterior a barrera_inicio_instruccion, entrando en obtener instrucción ", id_nucleo);
                     //ejeución de la instrucción
                     this.ejecutarInstruccion(id_nucleo, instruccion[0], instruccion[1], instruccion[2], instruccion[3]);
                     imprimirMensaje("5 Main Posterior a obtener instrucción, aumentando el reloj ", id_nucleo);
                     //aumento del reloj para la instrucción
-                    aumentarReloj(id_nucleo);
+                    //aumentarReloj(id_nucleo);
+                    aumentar_reloj(id_nucleo);
                     imprimirMensaje("6 Main Posterior a aumentar el reloj, entrando en barrera barrera_fin_instruccion", id_nucleo);
                     //se espera que ambos lleguen al final de la instrucción
-                    Console.WriteLine("Fin instruccion, nucleo " + id_nucleo);
-                    barrera_fin_instruccion.SignalAndWait();
-                    Console.WriteLine("Fin instruccion despues de barrera, nucleo " + id_nucleo);
+                    //barrera_fin_instruccion.SignalAndWait();
                     imprimirMensaje("7 Main Posterior a barrera barrera_fin_instruccion, reiniciando ciclo", id_nucleo);
                     imprimirMensaje("8 Main instrucción numero", current_quantum);
                     current_quantum++;
@@ -335,14 +332,11 @@ namespace ProcesadorMIPS
                 for (int i = 0; i < 40; i++)
                 {
                     imprimirMensaje("6 obtener_instruccion Previo a barrera_inicio_instruccion ", id_nucleo);
-                    Console.WriteLine("Barrera inicio instruccion en obtener instruccion. " + id_nucleo);
                     //barrera_inicio_instruccion.SignalAndWait();
-                    Console.WriteLine("Despues Barrera inicio instruccion en obtener instruccion. " + id_nucleo);
-                    aumentar_reloj(id_nucleo);
+                    //aumentarReloj(id_nucleo);
                     imprimirMensaje("7 obtener_instruccion posterior a barrera_fin_instruccion ", id_nucleo);
-                    Console.WriteLine("Barrera fin instruccion en obtener instruccion. " + id_nucleo);
+                    aumentar_reloj(id_nucleo);
                     //barrera_fin_instruccion.SignalAndWait();
-                    Console.WriteLine("Despues Barrera fin instruccion en obtener instruccion. " + id_nucleo);
                 }
                 imprimirMensaje("8 obtener_instruccion aumento reloj fin", id_nucleo);
                 //aquí hay que simular el aumento de reloj
@@ -516,13 +510,9 @@ namespace ProcesadorMIPS
 
 
         public void aumentar_reloj(int id_nucleo) {
-            Console.WriteLine("Antes de barrera inicio " + id_nucleo);
             barrera_inicio_instruccion.SignalAndWait();
-            Console.WriteLine("despues de barrera inicio" + id_nucleo);
             aumentarReloj(id_nucleo);
-            Console.WriteLine("antes de barrera fin" + id_nucleo);
             barrera_fin_instruccion.SignalAndWait();
-            Console.WriteLine("Despues de barrera fin" + id_nucleo);
         }
         
 
@@ -534,90 +524,93 @@ namespace ProcesadorMIPS
             int num_palabra = (direccion % 16) / 4; // numero de palabra
             int ind_cache = num_bloque % 4; //indice de cache para la chaché L1 de datos.
             int valor_registro_guardar = nucleos[id_nucleo].obtenerRegistro(reg_a_guardar);
+
+           //Console.WriteLine("SW Nucleo: " + id_nucleo + " va a escribir el valor " + valor_registro_guardar + "en la palabra " + num_palabra + " del bloque " + num_bloque + " de la direccion " + direccion);
+
             while (!guardado)
             {
-                Console.WriteLine("Antes de bloquear mi caché L1 de datos. Nucleo: " + id_nucleo);
+                //Console.WriteLine("Antes de bloquear mi caché L1 de datos. Nucleo: " + id_nucleo);
                 if (Monitor.TryEnter(cache_L1_datos[id_nucleo])) //intento bloquear caché
                 {
-                    Console.WriteLine("Tengo mi caché L1 de datos. Nucleo: " + id_nucleo);
+                    //Console.WriteLine("Tengo mi caché L1 de datos. Nucleo: " + id_nucleo);
                     if (cache_L1_datos[id_nucleo].hit(num_bloque, ind_cache)) //Si el bloque está en cache y está modificado o compartido, puedo escribir.
                     {
                         if (cache_L1_datos[id_nucleo].getEstado(ind_cache) == MODIFICADO)
                         { //Está modificado, puedo escribir en el.
-                            Console.WriteLine("Lo tengo y está modificado");
+                            //Console.WriteLine("Lo tengo y está modificado");
                             cache_L1_datos[id_nucleo].escribirPalabra(ind_cache, valor_registro_guardar, num_palabra); //Escribo la palabra en el bloque.
                             Monitor.Exit(cache_L1_datos[id_nucleo]); //Libero mi caché.
                             guardado = true; // Pongo guardado en true para que no entre al while y termine la instrucción.
                         }
                         else { //Está compartido.
-                            Console.WriteLine("Lo tengo y está compartido.");
-                            Console.WriteLine("Antes de bloquear caché L2 de datos. Nucleo: " + id_nucleo);
+                            //Console.WriteLine("Lo tengo y está compartido.");
+                            //Console.WriteLine("Antes de bloquear caché L2 de datos. Nucleo: " + id_nucleo);
                             if (Monitor.TryEnter(cache_L2))
                             { //Pido candado para Cache L2, lo que significa que obtengo el bus y puedo trbajar con Cache L2 y memoria.
-                                Console.WriteLine("Tengo caché L2 de datos. Nucleo: " + id_nucleo);
+                                //Console.WriteLine("Tengo caché L2 de datos. Nucleo: " + id_nucleo);
                                 int otro_nucleo = id_nucleo == 1 ? 0 : 1; //Para saber cual es el id del otro nucleo.
-                                Console.WriteLine("Antes de bloquear caché L1 de datos del otro nucleo. Nucleo: " + id_nucleo + ". Otro Nucleo: " + otro_nucleo);
+                                //Console.WriteLine("Antes de bloquear caché L1 de datos del otro nucleo. Nucleo: " + id_nucleo + ". Otro Nucleo: " + otro_nucleo);
                                 if (Monitor.TryEnter(cache_L1_datos[otro_nucleo]))
                                 { //Pido candado para la otra cache L1;
-                                    Console.WriteLine("Tengo caché L1 de datos del otro nucleo. Nucleo: " + id_nucleo + ". Otro Nucleo: " + otro_nucleo);
+                                    //Console.WriteLine("Tengo caché L1 de datos del otro nucleo. Nucleo: " + id_nucleo + ". Otro Nucleo: " + otro_nucleo);
                                     if (cache_L1_datos[otro_nucleo].getNumBloque(ind_cache) == num_bloque && cache_L1_datos[otro_nucleo].getEstado(ind_cache) == COMPARTIDO) //Si está el bloque y está Compartido.
                                     {
-                                        Console.WriteLine("La otra cache lo tiene y está compartido");
+                                        //Console.WriteLine("La otra cache lo tiene y está compartido");
                                         cache_L1_datos[otro_nucleo].setEstado(ind_cache, INVALIDO); //Invalido el bloque.
                                     }
                                     if (nucleos[otro_nucleo].obtenerRL() == num_bloque) { //Si el RL es igual a mi direccion de memoria entonces se pone en -1
                                         nucleos[otro_nucleo].asignarRL(INVALIDO);
                                     }
-                                    Console.WriteLine("Antes de liberar caché L1 de datos del otro nucleo. Nucleo: " + id_nucleo + ". Otro Nucleo: " + otro_nucleo);
+                                    //Console.WriteLine("Antes de liberar caché L1 de datos del otro nucleo. Nucleo: " + id_nucleo + ". Otro Nucleo: " + otro_nucleo);
                                     Monitor.Exit(cache_L1_datos[otro_nucleo]); //Libero la otra caché
-                                    Console.WriteLine("Despues de liberar caché L1 de datos del otro nucleo. Nucleo: " + id_nucleo + ". Otro Nucleo: " + otro_nucleo);
+                                    //Console.WriteLine("Despues de liberar caché L1 de datos del otro nucleo. Nucleo: " + id_nucleo + ". Otro Nucleo: " + otro_nucleo);
                                     int ind_cache_L2 = num_bloque % 8; //indice de cache para la chaché L2 de datos.
                                     if (cache_L2.getNumBloque(ind_cache_L2) == num_bloque && cache_L2.getEstado(ind_cache_L2) == COMPARTIDO) { //Si en L2 está el bloque en compartido se invalida.
-                                        Console.WriteLine("Cache L2 lo tiene compartido");
+                                        //Console.WriteLine("Cache L2 lo tiene compartido");
                                         cache_L2.setEstado(ind_cache_L2, INVALIDO); //Invalido el bloque.
                                     }
-                                    Console.WriteLine("Antes de liberar caché L2 de datos. Nucleo: " + id_nucleo);
+                                    //Console.WriteLine("Antes de liberar caché L2 de datos. Nucleo: " + id_nucleo);
                                     Monitor.Exit(cache_L2); //Libero la caché L2, osea, el Bus.
-                                    Console.WriteLine("Despues de liberar caché L2 de datos. Nucleo: " + id_nucleo);
+                                    //Console.WriteLine("Despues de liberar caché L2 de datos. Nucleo: " + id_nucleo);
                                     cache_L1_datos[id_nucleo].setEstado(ind_cache, MODIFICADO); //Cambio el bloque a Modificado en mi caché.
-                                    Console.WriteLine("Escribo la palabra "+ valor_registro_guardar +" en el bloque " + num_bloque);
+                                    //Console.WriteLine("Escribo el valor "+ valor_registro_guardar + " En la palabra "+num_palabra+ " en el bloque " + num_bloque);
                                     cache_L1_datos[id_nucleo].escribirPalabra(ind_cache, valor_registro_guardar, num_palabra); //Escribo la palabra en el bloque.
-                                    Console.WriteLine("Antes de liberar mi caché L1 de datos. Nucleo: " + id_nucleo);
+                                    //Console.WriteLine("Antes de liberar mi caché L1 de datos. Nucleo: " + id_nucleo);
                                     Monitor.Exit(cache_L1_datos[id_nucleo]); //Libero mi caché.
-                                    Console.WriteLine("Despues de liberar mi caché L1 de datos. Nucleo: " + id_nucleo);
+                                    //Console.WriteLine("Despues de liberar mi caché L1 de datos. Nucleo: " + id_nucleo);
                                     guardado = true; // Pongo guardado en true para que no entre al while y termine la instrucción.
                                 }
                                 else
                                 {
-                                    Console.WriteLine("No puedo obtener la otra caché");
-                                    Console.WriteLine("Antes de liberar caché L2 de datos. Nucleo: " + id_nucleo);
+                                    //Console.WriteLine("No puedo obtener la otra caché");
+                                    //Console.WriteLine("Antes de liberar caché L2 de datos. Nucleo: " + id_nucleo);
                                     Monitor.Exit(cache_L2); //Libero la caché L2, osea, el Bus.
-                                    Console.WriteLine("Despues de liberar caché L2 de datos. Nucleo: " + id_nucleo);
-                                    Console.WriteLine("Antes de liberar mi caché L1 de datos. Nucleo: " + id_nucleo);
+                                    //Console.WriteLine("Despues de liberar caché L2 de datos. Nucleo: " + id_nucleo);
+                                    //Console.WriteLine("Antes de liberar mi caché L1 de datos. Nucleo: " + id_nucleo);
                                     Monitor.Exit(cache_L1_datos[id_nucleo]); //Libero mi caché.
-                                    Console.WriteLine("Despues de liberar mi caché L1 de datos. Nucleo: " + id_nucleo);
+                                    //Console.WriteLine("Despues de liberar mi caché L1 de datos. Nucleo: " + id_nucleo);
                                     aumentar_reloj(id_nucleo); //aumento reloj
                                 }
                             } else {
-                                Console.WriteLine("No puedo obtener el bus");
-                                Console.WriteLine("Antes de liberar mi caché L1 de datos. Nucleo: " + id_nucleo);
+                                //Console.WriteLine("No puedo obtener el bus");
+                                //Console.WriteLine("Antes de liberar mi caché L1 de datos. Nucleo: " + id_nucleo);
                                 Monitor.Exit(cache_L1_datos[id_nucleo]); //Libero mi caché.
-                                Console.WriteLine("Despues de liberar mi caché L1 de datos. Nucleo: " + id_nucleo);
+                                //Console.WriteLine("Despues de liberar mi caché L1 de datos. Nucleo: " + id_nucleo);
                                 aumentar_reloj(id_nucleo); //aumento reloj
                             }
                         }
                         
                     }
                     else { //Fallo
-                        Console.WriteLine("No tengo el bloque.");
+                        //Console.WriteLine("No tengo el bloque.");
                         int estado_bloque_a_caer = cache_L1_datos[id_nucleo].getEstado(ind_cache); //Obtengo el estado del bloque al que le voy a caer encima
-                        Console.WriteLine("Antes de bloquear caché L2 de datos. Nucleo: " + id_nucleo);
+                        //Console.WriteLine("Antes de bloquear caché L2 de datos. Nucleo: " + id_nucleo);
                         if (Monitor.TryEnter(cache_L2))
                         { //Pido candado para Cache L2, lo que significa que obtengo el bus y puedo trbajar con Cache L2 y memoria.
-                            Console.WriteLine("Tengo caché L2 de datos. Nucleo: " + id_nucleo);
+                            //Console.WriteLine("Tengo caché L2 de datos. Nucleo: " + id_nucleo);
                             if (estado_bloque_a_caer == MODIFICADO)
                             { // si está modificado hay que mandarlo a escribir a la siguiente estructura.
-                                Console.WriteLine("Al bloque al que le voy a caer está modificado");
+                                //Console.WriteLine("Al bloque al que le voy a caer está modificado");
                                 BloqueDatos bloque_guardar = cache_L1_datos[id_nucleo].getBloque(ind_cache); //Obtengo el bloque que tengo que mandar a escribir.
                                 cache_L1_datos[id_nucleo].setEstado(ind_cache, INVALIDO); //Invalido el bloque en cache L1.
                                 //Se manda a escribir a L2 pero como L2 es No Write Allocate entonces se envia a escribir al siguiente nivel, osea, memoria.
@@ -629,13 +622,13 @@ namespace ProcesadorMIPS
                             }
 
                             int otro_nucleo = id_nucleo == 1 ? 0 : 1; //Para saber cual es el id del otro nucleo.
-                            Console.WriteLine("Antes de bloquear caché L1 de datos del otro nucleo. Nucleo: " + id_nucleo + ". Otro Nucleo: " + otro_nucleo);
+                            //Console.WriteLine("Antes de bloquear caché L1 de datos del otro nucleo. Nucleo: " + id_nucleo + ". Otro Nucleo: " + otro_nucleo);
                             if (Monitor.TryEnter(cache_L1_datos[otro_nucleo])) //Intento bloquear el otro nucleo
                             {
-                                Console.WriteLine("Tengo caché L1 de datos del otro nucleo. Nucleo: " + id_nucleo + ". Otro Nucleo: " + otro_nucleo);
+                                //Console.WriteLine("Tengo caché L1 de datos del otro nucleo. Nucleo: " + id_nucleo + ". Otro Nucleo: " + otro_nucleo);
                                 if (cache_L1_datos[otro_nucleo].getNumBloque(ind_cache) == num_bloque && cache_L1_datos[otro_nucleo].getEstado(ind_cache) == MODIFICADO)
                                 { //Está el que quiero modificado.
-                                    Console.WriteLine("La otra cache tiene el bloque que quiero y está modificado.");
+                                    //Console.WriteLine("La otra cache tiene el bloque que quiero y está modificado.");
                                     BloqueDatos bloque_guardar = cache_L1_datos[otro_nucleo].getBloque(ind_cache); //Obtengo el bloque que tengo que mandar a escribir.
                                     cache_L1_datos[otro_nucleo].setEstado(ind_cache, INVALIDO); //Invalido el bloque en la otra cache L1.
                                     //Se manda a escribir a L2 pero como L2 es No Write Allocate entonces se envia a escribir al siguiente nivel, osea, memoria.
@@ -650,9 +643,9 @@ namespace ProcesadorMIPS
                                         aumentar_reloj(id_nucleo); //aumento reloj
                                     }
 
-                                    Console.WriteLine("Antes de liberar caché L1 de datos del otro nucleo. Nucleo: " + id_nucleo + ". Otro Nucleo: " + otro_nucleo);
+                                    //Console.WriteLine("Antes de liberar caché L1 de datos del otro nucleo. Nucleo: " + id_nucleo + ". Otro Nucleo: " + otro_nucleo);
                                     Monitor.Exit(cache_L1_datos[otro_nucleo]); //Libero la otra caché
-                                    Console.WriteLine("Despues de liberar caché L1 de datos del otro nucleo. Nucleo: " + id_nucleo + ". Otro Nucleo: " + otro_nucleo);
+                                    //Console.WriteLine("Despues de liberar caché L1 de datos del otro nucleo. Nucleo: " + id_nucleo + ". Otro Nucleo: " + otro_nucleo);
                                     memoria_datos[num_bloque].setPalabras(bloque_guardar.getPalabras()); //Guardo el bloque en memoria.
                                     cache_L1_datos[id_nucleo].setBloque(bloque_guardar, num_bloque, ind_cache); //Escribo en mi cache el bloque.
                                     for (int i = 0; i < 40; i++)
@@ -662,7 +655,7 @@ namespace ProcesadorMIPS
                                 }
                                 else {  //Está el que quiero compartido o no está.
                                     if (cache_L1_datos[otro_nucleo].getNumBloque(ind_cache) == num_bloque && cache_L1_datos[otro_nucleo].getEstado(ind_cache) == COMPARTIDO) {
-                                        Console.WriteLine("La otra caché tiene el bloque y está compartido");
+                                        //Console.WriteLine("La otra caché tiene el bloque y está compartido");
                                         //Está el que quiero compartido
                                         cache_L1_datos[otro_nucleo].setEstado(ind_cache, INVALIDO);
                                     }
@@ -670,28 +663,28 @@ namespace ProcesadorMIPS
                                     { //Si el RL es igual a mi direccion de memoria entonces se pone en -1
                                         nucleos[otro_nucleo].asignarRL(INVALIDO);
                                     }
-                                    Console.WriteLine("Antes de liberar caché L1 de datos del otro nucleo. Nucleo: " + id_nucleo + ". Otro Nucleo: " + otro_nucleo);
+                                    //Console.WriteLine("Antes de liberar caché L1 de datos del otro nucleo. Nucleo: " + id_nucleo + ". Otro Nucleo: " + otro_nucleo);
                                     Monitor.Exit(cache_L1_datos[otro_nucleo]); //Libero la otra caché
-                                    Console.WriteLine("Despues de liberar caché L1 de datos del otro nucleo. Nucleo: " + id_nucleo + ". Otro Nucleo: " + otro_nucleo);
+                                    //Console.WriteLine("Despues de liberar caché L1 de datos del otro nucleo. Nucleo: " + id_nucleo + ". Otro Nucleo: " + otro_nucleo);
                                     int ind_cache_L2 = num_bloque % 8; //indice de cache para la chaché L2 de datos.
                                     if (cache_L2.getNumBloque(ind_cache_L2) == num_bloque && cache_L2.getEstado(ind_cache_L2) == COMPARTIDO)
                                     { //Si en L2 está el bloque en compartido se invalida.
-                                        Console.WriteLine("La cache L2 lo tiene y está compartido");
+                                        //Console.WriteLine("La cache L2 lo tiene y está compartido");
                                         cache_L2.setEstado(ind_cache_L2, INVALIDO); //Invalido el bloque.
                                     }
                                     else {
-                                        Console.WriteLine("La cache L2 no lo tiene, tengo que subirla de memoria.");
+                                        //Console.WriteLine("La cache L2 no lo tiene, tengo que subirla de memoria.");
                                         int[] bloque_memoria = memoria_datos[num_bloque].getPalabras(); //Obtengo el bloque de memoria.
                                         cache_L2.setBloqueEnteros(bloque_memoria, num_bloque, ind_cache_L2); //Asigno el bloque a cache L2.
                                         cache_L2.setEstado(ind_cache_L2, INVALIDO);
-                                        Console.WriteLine("La subí de memoria");
+                                        //Console.WriteLine("La subí de memoria");
                                         for (int i = 0; i < 40; i++)
                                         { //Se espera por los 40 ciclos que dura en escribir desde memoria.
-                                            Console.WriteLine("Espero tiempo " + i);
+                                            //Console.WriteLine("Espero tiempo " + i);
                                             aumentar_reloj(id_nucleo); //aumento reloj
                                         }
                                     }
-                                    Console.WriteLine("Subo el bloque a mi cache.");
+                                    //Console.WriteLine("Subo el bloque a mi cache.");
                                     BloqueDatos bloque_cache_L2 = cache_L2.getBloque(ind_cache_L2);
                                     cache_L1_datos[id_nucleo].setBloque(bloque_cache_L2, num_bloque, ind_cache);
                                     for (int i = 0; i < 8; i++)
@@ -701,43 +694,43 @@ namespace ProcesadorMIPS
                                     
                                 }
 
-                                Console.WriteLine("Antes de liberar caché L2 de datos. Nucleo: " + id_nucleo);
+                                //Console.WriteLine("Antes de liberar caché L2 de datos. Nucleo: " + id_nucleo);
                                 Monitor.Exit(cache_L2); //Libero la caché L2, osea, el Bus.
-                                Console.WriteLine("Despues de liberar caché L2 de datos. Nucleo: " + id_nucleo);
+                                //Console.WriteLine("Despues de liberar caché L2 de datos. Nucleo: " + id_nucleo);
                                 cache_L1_datos[id_nucleo].setEstado(ind_cache, MODIFICADO); //Cambio el bloque a Modificado en mi caché.
-                                Console.WriteLine("Escribo la palabra " + valor_registro_guardar + " en el bloque " + num_bloque);
+                                //Console.WriteLine("Escribo el valor " + valor_registro_guardar + " En la palabra " + num_palabra + " en el bloque " + num_bloque);
                                 cache_L1_datos[id_nucleo].escribirPalabra(ind_cache, valor_registro_guardar, num_palabra); //Escribo la palabra en el bloque.
 
-                                Console.WriteLine("Antes de liberar mi caché L1 de datos. Nucleo: " + id_nucleo);
+                                //Console.WriteLine("Antes de liberar mi caché L1 de datos. Nucleo: " + id_nucleo);
                                 Monitor.Exit(cache_L1_datos[id_nucleo]); //Libero mi caché.
-                                Console.WriteLine("Despues de liberar mi caché L1 de datos. Nucleo: " + id_nucleo);
+                                //Console.WriteLine("Despues de liberar mi caché L1 de datos. Nucleo: " + id_nucleo);
                                 guardado = true; // Pongo guardado en true para que no entre al while y termine la instrucción.
                                 
                             }
                             else
                             {
-                                Console.WriteLine("No puedo obtener la otra caché");
-                                Console.WriteLine("Antes de liberar caché L2 de datos. Nucleo: " + id_nucleo);
+                                //Console.WriteLine("No puedo obtener la otra caché");
+                                //Console.WriteLine("Antes de liberar caché L2 de datos. Nucleo: " + id_nucleo);
                                 Monitor.Exit(cache_L2); //Libero la caché L2, osea, el Bus.
-                                Console.WriteLine("Despues de liberar caché L2 de datos. Nucleo: " + id_nucleo);
-                                Console.WriteLine("Antes de liberar mi caché L1 de datos. Nucleo: " + id_nucleo);
+                                //Console.WriteLine("Despues de liberar caché L2 de datos. Nucleo: " + id_nucleo);
+                                //Console.WriteLine("Antes de liberar mi caché L1 de datos. Nucleo: " + id_nucleo);
                                 Monitor.Exit(cache_L1_datos[id_nucleo]); //Libero mi caché.
-                                Console.WriteLine("Despues de liberar mi caché L1 de datos. Nucleo: " + id_nucleo);
+                                //Console.WriteLine("Despues de liberar mi caché L1 de datos. Nucleo: " + id_nucleo);
                                 aumentar_reloj(id_nucleo); //aumento reloj
                             }
                         }
                         else {
-                            Console.WriteLine("No puedo obtener la caché L2");
-                            Console.WriteLine("Antes de liberar mi caché L1 de datos. Nucleo: " + id_nucleo);
+                            //Console.WriteLine("No puedo obtener la caché L2");
+                            //Console.WriteLine("Antes de liberar mi caché L1 de datos. Nucleo: " + id_nucleo);
                             Monitor.Exit(cache_L1_datos[id_nucleo]); //Libero mi caché.
-                            Console.WriteLine("Despues de liberar mi caché L1 de datos. Nucleo: " + id_nucleo);
+                            //Console.WriteLine("Despues de liberar mi caché L1 de datos. Nucleo: " + id_nucleo);
                             aumentar_reloj(id_nucleo); //aumento reloj
                         }
                     }
                 }
                 else
                 {
-                    Console.WriteLine("No puedo obtener mi caché");
+                    //Console.WriteLine("No puedo obtener mi caché");
                     aumentar_reloj(id_nucleo); //aumento reloj
                 }
             }
@@ -752,12 +745,14 @@ namespace ProcesadorMIPS
          * saca la palabra y la guarda en el registro destino. 
          *          
         */
-        public void operacion_LW(int id_nucleo, int reg_fuente, int reg_destino, int inmediato) {
+        public void operacion_LW(int id_nucleo, int reg_fuente, int reg_destino, int inmediato) { 
             bool cargado = false;
             int direccion = nucleos[id_nucleo].obtenerRegistro(reg_fuente) + inmediato; //Obtiene la dirección de memoria a cargar.
             int num_bloque = direccion / 16; //numero de bloque
             int num_palabra = (direccion % 16) / 4; // numero de palabra
             int ind_cache = num_bloque % 4; //indice de cache para la chaché L1 de datos.
+
+
             
 
             while (!cargado) {
@@ -767,6 +762,7 @@ namespace ProcesadorMIPS
                     {
                         int resultado = cache_L1_datos[id_nucleo].getPalabraBloque(num_palabra, ind_cache); //Obtengo la palabra que quiero leer.
                         nucleos[id_nucleo].asignarRegistro(resultado,reg_destino); //Asigno la palabra al registro destino.
+                        //Console.WriteLine("LW Nucleo: "+ id_nucleo + "lee el valor "+ resultado + " lo asigno al registro " + reg_destino + ". Palabra: " + num_palabra + " bloque: " + num_bloque + " Direccion " + direccion);
                         Monitor.Exit(cache_L1_datos[id_nucleo]);
                         cargado = true;
                     }
@@ -828,6 +824,7 @@ namespace ProcesadorMIPS
 
                                 Monitor.Exit(cache_L2);
                                 int resultado = cache_L1_datos[id_nucleo].getPalabraBloque(num_palabra, ind_cache); //Obtengo la palabra que quiero leer.
+                                //Console.WriteLine("LW Nucleo: " + id_nucleo + "lee el valor " + resultado + " lo asigno al registro " + reg_destino + ". Palabra: " + num_palabra + " bloque: " + num_bloque + " Direccion " + direccion);
                                 nucleos[id_nucleo].asignarRegistro(resultado, reg_destino); //Asigno la palabra al registro destino.
                                 Monitor.Exit(cache_L1_datos[id_nucleo]);
                                 cargado = true;
