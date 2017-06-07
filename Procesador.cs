@@ -30,7 +30,7 @@ namespace ProcesadorMIPS
         const int INVALIDO = -1;
         const int COMPARTIDO = 0;
         const int MODIFICADO = 1;
-        const bool DEBUG = false;
+        const bool DEBUG = true;
 
         Nucleo []nucleos; //contiene ambos nucleos de la maquina
         Queue<Hilillo> cola_hilillos; //cola de donde los nucleos obtienen hilillos para ejecutar
@@ -481,11 +481,6 @@ namespace ProcesadorMIPS
                         }
                     }
                     Console.WriteLine("FINALIZADO "+id_nucleo);
-                    //nucleos[id_nucleo].setFinalizado(true);
-                    //barrera_inicio_instruccion.RemoveParticipant();
-                    //barrera_fin_instruccion.RemoveParticipant();
-                    //barrera_inicio_aumento_reloj.RemoveParticipant();
-                    //barrera_fin_aumento_reloj.RemoveParticipant();
                     break;
                 default:
                     break;

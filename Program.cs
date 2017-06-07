@@ -71,7 +71,6 @@ namespace ProcesadorMIPS
             int[] registros_nucleo_2 = nucleos[1].obtenerRegistros();
             imprimirRegistros(registros_nucleo_1,1);
             imprimirRegistros(registros_nucleo_2,2);
-
         }
 
         public static void imprimirRegistros(int[] registros_nucleo, int nucleo_id)
