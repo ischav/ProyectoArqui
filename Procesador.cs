@@ -336,12 +336,12 @@ namespace ProcesadorMIPS
                 {
                     imprimirMensaje("6 obtener_instruccion Previo a barrera_inicio_instruccion ", id_nucleo);
                     Console.WriteLine("Barrera inicio instruccion en obtener instruccion. " + id_nucleo);
-                    barrera_inicio_instruccion.SignalAndWait();
+                    //barrera_inicio_instruccion.SignalAndWait();
                     Console.WriteLine("Despues Barrera inicio instruccion en obtener instruccion. " + id_nucleo);
-                    aumentarReloj(id_nucleo);
+                    aumentar_reloj(id_nucleo);
                     imprimirMensaje("7 obtener_instruccion posterior a barrera_fin_instruccion ", id_nucleo);
                     Console.WriteLine("Barrera fin instruccion en obtener instruccion. " + id_nucleo);
-                    barrera_fin_instruccion.SignalAndWait();
+                    //barrera_fin_instruccion.SignalAndWait();
                     Console.WriteLine("Despues Barrera fin instruccion en obtener instruccion. " + id_nucleo);
                 }
                 imprimirMensaje("8 obtener_instruccion aumento reloj fin", id_nucleo);
