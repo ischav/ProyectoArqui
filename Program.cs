@@ -48,6 +48,9 @@ namespace ProcesadorMIPS
              * Se crearor los nucleos del procesador
              */
 
+            bool modo = obtenerModo();
+            procesador.asignarModo(modo);
+
             // Se inicia la simulación nucleo 1 y 2
             Thread Nucleo1 = new Thread(procesador.inicializar);
             Thread Nucleo2 = new Thread(procesador.inicializar);
@@ -64,16 +67,28 @@ namespace ProcesadorMIPS
             { }
 
             //se obtienen para recolectar sus dados
+
+
+
             Nucleo1.Join();
             Nucleo2.Join();
             Nucleo[] nucleos=procesador.obtenerNucleos();
             int[] registros_nucleo_1 = nucleos[0].obtenerRegistros();
             int[] registros_nucleo_2 = nucleos[1].obtenerRegistros();
-            imprimirRegistros(registros_nucleo_1,1);
-            imprimirRegistros(registros_nucleo_2,2);
-            procesador.imprimirRegistros();
-            procesador.imprimirColaHilillos();
-            procesador.imprimirColaHilillosFinalizados();
+
+
+            procesador.imprimirMemoriaDatos();
+            procesador.imprimirCacheL2();
+
+
+            //imprimirRegistros(registros_nucleo_1,1);
+            //imprimirRegistros(registros_nucleo_2,2);
+            //procesador.imprimirRegistros();
+            //procesador.imprimirColaHilillos();
+            //procesador.imprimirColaHilillosFinalizados();
+
+            Console.WriteLine("Presione Enter para finalizar la ejecución...");
+            while (Console.ReadKey().Key != ConsoleKey.Enter) { }
         }
 
         public static void imprimirRegistros(int[] registros_nucleo, int nucleo_id)
@@ -96,6 +111,21 @@ namespace ProcesadorMIPS
                 cantidad_hilillos = Convert.ToInt32(Console.ReadLine());
             }
             return cantidad_hilillos;
+        }
+
+        public static bool obtenerModo()
+        {
+            DialogResult dialogResult = MessageBox.Show("Desea ver la ejecución en modo lento?", "Modo", MessageBoxButtons.YesNo);
+            if (dialogResult == DialogResult.Yes)
+            {
+                return true;
+            }
+            else if (dialogResult == DialogResult.No)
+            {
+                return false;
+            }
+
+            return false;
         }
 
         // Leer ruta de archivos

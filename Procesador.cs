@@ -20,6 +20,7 @@ namespace ProcesadorMIPS
         public CacheDatos cache_L2;
         public BloqueInstrucciones[] memoria_instrucciones;
         public bool modo;
+
         Reloj reloj;
         int quantum, cantidad_hilillos;
 
@@ -56,7 +57,7 @@ namespace ProcesadorMIPS
             reloj = new Reloj();
             aumento_reloj = -1;
             quantum = 0;
-            modo = false;
+
             /* La memoria principal se define como dos vectores
              * - Memoria de instrucciones = Vector de 40 bloques de instrucciones,
              *   donde cada posición del vector almacena un vector correspondiente
@@ -88,6 +89,11 @@ namespace ProcesadorMIPS
             barrera_fin_instruccion = new Barrier(participantCount: 2);
             barrera_inicio_aumento_reloj = new Barrier(participantCount: 2);
             barrera_fin_aumento_reloj = new Barrier(participantCount: 2);
+
+            modo = false;
+
+
+
         }
 
         /*
@@ -109,6 +115,10 @@ namespace ProcesadorMIPS
         public void asignarQuantum(int q)
         {
             this.quantum = q;
+        }
+
+        public void asignarModo(bool nuevo_modo) {
+            this.modo = nuevo_modo;
         }
 
 
@@ -220,6 +230,7 @@ namespace ProcesadorMIPS
                         nucleos[id_nucleo].setFinalizado(false);
                         nucleos[id_nucleo].asignarIdentificadorHilillo(hilo_desencolado.obtenerIdentificadorHilillo());
                         pudo_desencolar = true;
+                        Console.WriteLine("Hilo en ejecución: " + hilo_desencolado.obtenerIdentificadorHilillo() + ". En el nucleo: " + id_nucleo);
                     }
                     Monitor.Exit(cola_hilillos);
                     return pudo_desencolar;
@@ -405,7 +416,6 @@ namespace ProcesadorMIPS
 
                     //imprimirMemorias();
                     operacion_LW(id_nucleo, op1, op2, op3);
-                    //LOAD
                     //imprimirMemorias();
                     break;
 
@@ -766,6 +776,7 @@ namespace ProcesadorMIPS
         */
         public void operacion_LW(int id_nucleo, int reg_fuente, int reg_destino, int inmediato)
         {
+            //Console.WriteLine("LOADDDDDDDDDDD");
             bool cargado = false;
             int direccion = nucleos[id_nucleo].obtenerRegistro(reg_fuente) + inmediato; //Obtiene la dirección de memoria a cargar.
             int num_bloque = direccion / 16; //numero de bloque
@@ -895,11 +906,12 @@ namespace ProcesadorMIPS
             {
                 aumento_reloj = id_nucleo;
                 reloj.aumentarReloj();
+                Console.WriteLine("Ciclos de reloj: " + reloj.obtenerReloj());
                 if (modo)
                 {
+                    Console.WriteLine("Presione Enter para continuar...");
                     while (Console.ReadKey().Key != ConsoleKey.Enter) { }
                 }
-                Console.WriteLine("Hilo " + id_nucleo + " aumentandando reloj valor: " +reloj.obtenerReloj());
             }
             barrera_fin_aumento_reloj.SignalAndWait();
             if (aumento_reloj == id_nucleo)
@@ -1026,9 +1038,9 @@ namespace ProcesadorMIPS
 
             for (int i = 0; i < 4; i++)
             {
-                BloqueDatos bd1 = cache_L1_datos[0].getBloque(i);
+                BloqueDatos bd = cache_L1_datos[0].getBloque(i);
                 Console.Write("Bloque " + i + "::::");
-                Console.WriteLine(" P1: " + bd1.getPalabra(0) + " P2: " + bd1.getPalabra(1) + " P3: " + bd1.getPalabra(2) + " P4: " + bd1.getPalabra(3)+" E: "+estados1[i]+" B: "+num_bloques1[i]);
+                Console.WriteLine(" P1: " + bd.getPalabra(0) + " P2: " + bd.getPalabra(1) + " P3: " + bd.getPalabra(2) + " P4: " + bd.getPalabra(3)+" E: "+estados1[i]+" B: "+num_bloques1[i]);
             }
             Console.WriteLine("----------------Caché L1 datos nucleo 2--------------");
             int[] num_bloques2 = cache_L1_datos[1].obtenerNumBloques();
@@ -1036,11 +1048,27 @@ namespace ProcesadorMIPS
 
             for (int i = 0; i < 4; i++)
             {
-                BloqueDatos bd2 = cache_L1_datos[1].getBloque(i);
+                BloqueDatos bd = cache_L1_datos[1].getBloque(i);
                 Console.Write("Bloque " + i + "::::");
-                Console.WriteLine(" P1: " + bd2.getPalabra(0) + " P2: " + bd2.getPalabra(1) + " P3: " + bd2.getPalabra(2) + " P4: " + bd2.getPalabra(3) + " E: " + estados2[i] + " B: " + num_bloques2[i]);
+                Console.WriteLine(" P1: " + bd.getPalabra(0) + " P2: " + bd.getPalabra(1) + " P3: " + bd.getPalabra(2) + " P4: " + bd.getPalabra(3) + " E: " + estados2[i] + " B: " + num_bloques2[i]);
             }
         }
+
+
+        public void imprimirCacheL2()
+        {
+            Console.WriteLine("----------------Caché L2--------------");
+            int[] num_bloques1 = cache_L2.obtenerNumBloques();
+            int[] estados1 = cache_L2.obtenerEstados();
+
+            for (int i = 0; i < 8; i++)
+            {
+                BloqueDatos bd = cache_L2.getBloque(i);
+                Console.Write("Bloque " + i + "::::");
+                Console.WriteLine(" P1: " + bd.getPalabra(0) + " P2: " + bd.getPalabra(1) + " P3: " + bd.getPalabra(2) + " P4: " + bd.getPalabra(3) + " E: " + estados1[i] + " B: " + num_bloques1[i]);
+            }
+        }
+
     }
 
 }
