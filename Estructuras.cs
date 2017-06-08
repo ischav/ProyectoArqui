@@ -146,6 +146,17 @@ namespace ProcesadorMIPS
             }
         }
 
+
+        public int[] obtenerEstados()
+        {
+            return estados;
+        }
+
+        public int[] obtenerNumBloques()
+        {
+            return num_bloques;
+        }
+
         public void setBloque(BloqueDatos nuevo_bloque, int nuevo_num_bloque, int indice_cache) {
             bloques[indice_cache].setPalabras(nuevo_bloque.getPalabras());
             estados[indice_cache] = 0; //Compartido
