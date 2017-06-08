@@ -8,7 +8,7 @@ namespace ProcesadorMIPS
 {
     class Hilillo
     {
-        int identificador_hilillo;//valor único para cada hilillo
+        String identificador_hilillo;//valor único para cada hilillo
         int inicio_hilillo;//indica el inicio de la ejecución del hilillo.
         int fin_hilillo;//indica el fin de la ejecución del hilillo
         int [] registros_hilillo;//es el contexto, mantiene los valores del hilillo.
@@ -21,7 +21,7 @@ namespace ProcesadorMIPS
         *
         *
         */
-        public Hilillo(int identificador)
+        public Hilillo(String identificador)
         {
             this.identificador_hilillo = identificador;
             inicio_hilillo = 0;
@@ -53,7 +53,7 @@ namespace ProcesadorMIPS
         *
         *
         */
-        public void asignarIdentificadorHilillo(int numero)
+        public void asignarIdentificadorHilillo(String numero)
         {
             this.identificador_hilillo = numero;
         }
@@ -63,7 +63,7 @@ namespace ProcesadorMIPS
         *
         *
         */
-        public int obtenerIdentificadorHilillo()
+        public String obtenerIdentificadorHilillo()
         {
             return identificador_hilillo;
         }

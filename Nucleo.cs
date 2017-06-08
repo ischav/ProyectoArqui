@@ -21,19 +21,19 @@ namespace ProcesadorMIPS
         public int RL; 
         public int quantum_hilillo;
         public bool finalizado;
-        public int identificador_hilillo;
+        public String identificador_hilillo;
 
         public Nucleo() {
             quantum_hilillo = 0;
             finalizado = false;
             registros_nucleo = new int[33];
-            identificador_hilillo = -1;
+            identificador_hilillo = "-1";
             RL = -1; // empieza en -1.
         }
         /*
          * Obtener el identificador del hilillo
         */
-        public int obtenerIdentificadorHilillo()
+        public String obtenerIdentificadorHilillo()
         {
             return identificador_hilillo; 
        }
@@ -41,7 +41,7 @@ namespace ProcesadorMIPS
         /*
          * Asignar un identificador correspondiente al hilillo que se cargo en este núcleo
         */
-        public void asignarIdentificadorHilillo(int id)
+        public void asignarIdentificadorHilillo(String id)
         {
             identificador_hilillo = id;
         }
