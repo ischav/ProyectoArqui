@@ -531,7 +531,7 @@ namespace ProcesadorMIPS
             int ind_cache = num_bloque % 4; //indice de cache para la chaché L1 de datos.
             int valor_registro_guardar = nucleos[id_nucleo].obtenerRegistro(reg_a_guardar);
 
-            //Console.WriteLine("SW Nucleo: " + id_nucleo + " va a escribir el valor " + valor_registro_guardar + "en la palabra " + num_palabra + " del bloque " + num_bloque + " de la direccion " + direccion);
+            Console.WriteLine("SW Nucleo: " + id_nucleo + " va a escribir el valor " + valor_registro_guardar + "en la palabra " + num_palabra + " del bloque " + num_bloque + " de la direccion " + direccion);
 
             while (!guardado)
             {
@@ -765,6 +765,7 @@ namespace ProcesadorMIPS
         */
         public void operacion_LW(int id_nucleo, int reg_fuente, int reg_destino, int inmediato)
         {
+            Console.WriteLine("LOADDDDDDDDDDD");
             bool cargado = false;
             int direccion = nucleos[id_nucleo].obtenerRegistro(reg_fuente) + inmediato; //Obtiene la dirección de memoria a cargar.
             int num_bloque = direccion / 16; //numero de bloque
@@ -778,7 +779,7 @@ namespace ProcesadorMIPS
             {
                 if (Monitor.TryEnter(cache_L1_datos[id_nucleo])) //intento bloquear caché
                 {
-                    if (!cache_L1_datos[id_nucleo].hit(num_bloque, ind_cache)) //Si el bloque está en cache y está modificado o compartido, puedo leerlo.
+                    if (cache_L1_datos[id_nucleo].hit(num_bloque, ind_cache)) //Si el bloque está en cache y está modificado o compartido, puedo leerlo.
                     {
                         int resultado = cache_L1_datos[id_nucleo].getPalabraBloque(num_palabra, ind_cache); //Obtengo la palabra que quiero leer.
                         nucleos[id_nucleo].asignarRegistro(resultado, reg_destino); //Asigno la palabra al registro destino.
@@ -794,7 +795,7 @@ namespace ProcesadorMIPS
                             if (estado_bloque_a_caer == MODIFICADO)
                             { // si está modificado hay que mandarlo a escribir a la siguiente estructura.
                                 BloqueDatos bloque_guardar = cache_L1_datos[id_nucleo].getBloque(ind_cache); //Obtengo el bloque que tengo que mandar a escribir.
-                                int ind_bloque_guardar = cache_L1_datos[ind_cache].getNumBloque(ind_cache);
+                                int ind_bloque_guardar = cache_L1_datos[id_nucleo].getNumBloque(ind_cache);
                                 cache_L1_datos[id_nucleo].setEstado(ind_cache, INVALIDO); //Invalido el bloque en cache L1.
                                 //Se manda a escribir a L2 pero como L2 es No Write Allocate entonces se envia a escribir al siguiente nivel, osea, memoria.
                                 memoria_datos[ind_bloque_guardar].setPalabras(bloque_guardar.getPalabras()); //Guardo el bloque en memoria.
@@ -1025,12 +1026,12 @@ namespace ProcesadorMIPS
                 Console.WriteLine(" P1: " + bd.getPalabra(0) + " P2: " + bd.getPalabra(1) + " P3: " + bd.getPalabra(2) + " P4: " + bd.getPalabra(3)+" E: "+estados1[i]+" B: "+num_bloques1[i]);
             }
             Console.WriteLine("----------------Caché L1 datos nucleo 2--------------");
-            int[] num_bloques2 = cache_L1_datos[0].obtenerNumBloques();
-            int[] estados2 = cache_L1_datos[0].obtenerEstados();
+            int[] num_bloques2 = cache_L1_datos[1].obtenerNumBloques();
+            int[] estados2 = cache_L1_datos[1].obtenerEstados();
 
             for (int i = 0; i < 4; i++)
             {
-                BloqueDatos bd = cache_L1_datos[0].getBloque(i);
+                BloqueDatos bd = cache_L1_datos[1].getBloque(i);
                 Console.Write("Bloque " + i + "::::");
                 Console.WriteLine(" P1: " + bd.getPalabra(0) + " P2: " + bd.getPalabra(1) + " P3: " + bd.getPalabra(2) + " P4: " + bd.getPalabra(3) + " E: " + estados2[i] + " B: " + num_bloques2[i]);
             }
