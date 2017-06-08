@@ -168,6 +168,13 @@ namespace ProcesadorMIPS
             num_bloques[indice_cache] = nuevo_num_bloque;
         }
 
+        public void copiarBloque(BloqueDatos nuevo_bloque, int indice, int estado, int bloque)
+        {
+            bloques[indice].setPalabras(nuevo_bloque.getPalabras());
+            estados[indice] = estado; 
+            num_bloques[indice] = bloque;
+        }
+
         public void escribirPalabra(int indice_cache, int dato, int palabra) {
             bloques[indice_cache].setPalabra(dato, palabra);
         }

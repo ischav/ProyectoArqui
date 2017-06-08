@@ -39,15 +39,6 @@ namespace ProcesadorMIPS
             ciclos_reloj_hilillo = 0;
         }
 
-        /*
-        *
-        *
-        */
-        public void Inicializar(int identificador) {
-
-        }
-
-
 
         /*
         *
@@ -77,8 +68,7 @@ namespace ProcesadorMIPS
         {
             this.ciclos_reloj_hilillo = ciclos;
         }
-        
-        
+
         /*
         *
         *

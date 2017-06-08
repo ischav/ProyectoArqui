@@ -1,11 +1,8 @@
-Esto lo escribe...
 Numero hilillo: 3.txt
-El hilillo inicia en la dirección: M[0]
-El hilillo finaliza en la dirección: M[0]
 Finalizado: True
 Program Counter: 376
 
-Ciclos de reloj: 0
+Ciclos de reloj: 1508
 
 R[0] = 0
 
@@ -72,12 +69,10 @@ R[30] = 0
 R[31] = 44
 
 Numero hilillo: 5.txt
-El hilillo inicia en la dirección: M[0]
-El hilillo finaliza en la dirección: M[0]
 Finalizado: True
 Program Counter: 520
 
-Ciclos de reloj: 0
+Ciclos de reloj: 832
 
 R[0] = 0
 
@@ -144,12 +139,10 @@ R[30] = 0
 R[31] = 504
 
 Numero hilillo: 0.txt
-El hilillo inicia en la dirección: M[0]
-El hilillo finaliza en la dirección: M[0]
 Finalizado: True
 Program Counter: 84
 
-Ciclos de reloj: 0
+Ciclos de reloj: 1863
 
 R[0] = 0
 
@@ -216,12 +209,10 @@ R[30] = 0
 R[31] = 99
 
 Numero hilillo: 1.txt
-El hilillo inicia en la dirección: M[0]
-El hilillo finaliza en la dirección: M[0]
 Finalizado: True
 Program Counter: 168
 
-Ciclos de reloj: 0
+Ciclos de reloj: 2452
 
 R[0] = 0
 
@@ -288,12 +279,10 @@ R[30] = 0
 R[31] = 88
 
 Numero hilillo: 2.txt
-El hilillo inicia en la dirección: M[0]
-El hilillo finaliza en la dirección: M[0]
 Finalizado: True
 Program Counter: 252
 
-Ciclos de reloj: 0
+Ciclos de reloj: 2666
 
 R[0] = 0
 
@@ -360,12 +349,10 @@ R[30] = 0
 R[31] = 55
 
 Numero hilillo: 4.txt
-El hilillo inicia en la dirección: M[0]
-El hilillo finaliza en la dirección: M[0]
 Finalizado: True
 Program Counter: 480
 
-Ciclos de reloj: 0
+Ciclos de reloj: 3086
 
 R[0] = 0
 

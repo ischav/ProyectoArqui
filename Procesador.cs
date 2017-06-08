@@ -37,7 +37,7 @@ namespace ProcesadorMIPS
         Nucleo[] nucleos; //contiene ambos nucleos de la maquina
         Queue<Hilillo> cola_hilillos; //cola de donde los nucleos obtienen hilillos para ejecutar
         Queue<Hilillo> cola_hilillos_finalizados;
-
+        Queue<CacheDatos> cola_cache_L1_hilillos_finalizados;
         //Barreras de la simulación
         public static Barrier barrera_inicio_instruccion;
         public static Barrier barrera_fin_instruccion;
@@ -81,7 +81,7 @@ namespace ProcesadorMIPS
             // Se inicializa la cola donde serán almacenados los hilillos
             cola_hilillos = new Queue<Hilillo>();
             cola_hilillos_finalizados = new Queue<Hilillo>();
-
+            cola_cache_L1_hilillos_finalizados = new Queue<CacheDatos>();
             /* Barreras que controlan el quantum, ya que una instrucción 
              * equivale a un elemento del quantum
              */
@@ -228,6 +228,7 @@ namespace ProcesadorMIPS
                         int[] contexto_hilo_desencolado = hilo_desencolado.obtenerContexto();
                         nucleos[id_nucleo].asignarContexto(contexto_hilo_desencolado);
                         nucleos[id_nucleo].setFinalizado(false);
+                        nucleos[id_nucleo].asignarAcumuladorReloj(hilo_desencolado.obtenerCiclosReloj());
                         nucleos[id_nucleo].asignarIdentificadorHilillo(hilo_desencolado.obtenerIdentificadorHilillo());
                         pudo_desencolar = true;
                         Console.WriteLine("Hilo en ejecución: " + hilo_desencolado.obtenerIdentificadorHilillo() + ". En el nucleo: " + id_nucleo);
@@ -247,6 +248,7 @@ namespace ProcesadorMIPS
             int[] registros = nucleos[id_nucleo].obtenerRegistros();
             Hilillo nuevo_hilillo = new Hilillo(nucleos[id_nucleo].obtenerIdentificadorHilillo());
             nuevo_hilillo.asignarContexto(registros);
+            nuevo_hilillo.asignarCiclosReloj(nucleos[id_nucleo].obtenerAcumuladorReloj());
             bool encolado = false;
             while (!encolado)
             {
@@ -319,6 +321,7 @@ namespace ProcesadorMIPS
             barrera_fin_instruccion.RemoveParticipant();
             barrera_inicio_aumento_reloj.RemoveParticipant();
             barrera_fin_aumento_reloj.RemoveParticipant();
+
         }
 
         public int[] obtener_instruccion(int id_nucleo)
@@ -515,14 +518,28 @@ namespace ProcesadorMIPS
                     Hilillo nuevo_hilillo = new Hilillo(nucleos[id_nucleo].obtenerIdentificadorHilillo());
                     nuevo_hilillo.asignarContexto(registros);
                     nuevo_hilillo.asignarFinalizado();
+                    nuevo_hilillo.asignarCiclosReloj(nucleos[id_nucleo].obtenerAcumuladorReloj());
+                    //se crea una caché L1 para guardar el estado al momento del hilillo finalizar
+                    CacheDatos temp_L1 = new CacheDatos(4);
+                    int[] estados = cache_L1_datos[id_nucleo].obtenerEstados();
+                    int[] bloques = cache_L1_datos[id_nucleo].obtenerNumBloques();
+
+                    for (int i = 0; i < 4; i++)
+                    {
+                        BloqueDatos bd = cache_L1_datos[id_nucleo].getBloque(i);
+                        temp_L1.copiarBloque(bd, i, estados[i], bloques[i]);
+                    }
+
                     bool encolado = false;
                     while (!encolado)
                     {
-                        if (Monitor.TryEnter(cola_hilillos_finalizados))
+                        if (Monitor.TryEnter(cola_hilillos_finalizados)&& Monitor.TryEnter(cola_cache_L1_hilillos_finalizados))
                         {
                             //sección critica
                             cola_hilillos_finalizados.Enqueue(nuevo_hilillo);
+                            cola_cache_L1_hilillos_finalizados.Enqueue(temp_L1);
                             Monitor.Exit(cola_hilillos_finalizados);
+                            Monitor.Exit(cola_cache_L1_hilillos_finalizados);
                             encolado = true;
                         }
                     }
@@ -902,6 +919,7 @@ namespace ProcesadorMIPS
         public void aumentarReloj(int id_nucleo)
         {
             barrera_inicio_aumento_reloj.SignalAndWait();
+            nucleos[id_nucleo].aumentarAcumuladorReloj();
             if (Monitor.TryEnter(reloj))
             {
                 aumento_reloj = id_nucleo;
@@ -983,26 +1001,46 @@ namespace ProcesadorMIPS
 
         public void imprimirColaHilillosFinalizados()
         {
-            Console.WriteLine("Entró aquí");
             string fileName = Path.GetFullPath(Directory.GetCurrentDirectory() + @"\ColaHilillosFinalizados.txt");
-            Console.WriteLine(fileName);
+            //CULPABLEEEEEEEEEE =====>   Console.WriteLine(fileName);
             using (StreamWriter archivo = new StreamWriter(fileName))
             {
-                Queue<Hilillo> cola_aux = new Queue<Hilillo>(cola_hilillos_finalizados);
-                Hilillo aux = null;
-                archivo.WriteLine("Esto lo escribe...");
-                while (cola_aux.Count > 0)
+                Queue<Hilillo> cola_aux_hilillo = new Queue<Hilillo>(cola_hilillos_finalizados);
+                Queue<CacheDatos> cola_aux_cache = new Queue<CacheDatos>(cola_cache_L1_hilillos_finalizados);
+                Hilillo aux_hilillo = null;
+                CacheDatos aux_cache = null;
+
+                while (cola_aux_hilillo.Count > 0 && cola_aux_cache.Count > 0)
                 {
-                    aux = cola_aux.Dequeue();
-                    archivo.WriteLine("Numero hilillo: " + aux.obtenerIdentificadorHilillo());
-                    archivo.WriteLine("El hilillo inicia en la dirección: M[" + aux.obtenerInicioHilillo() + "]");
-                    archivo.WriteLine("El hilillo finaliza en la dirección: M[" + aux.obtenerFinHilillo() + "]");
-                    archivo.WriteLine("Finalizado: " + aux.obtenerFinalizado());
-                    archivo.WriteLine("Program Counter: " + aux.obtenerPC() + "\n");
-                    archivo.WriteLine("Ciclos de reloj: " + aux.obtenerCiclosReloj() + "\n");
+                    aux_hilillo = cola_aux_hilillo.Dequeue();
+                    aux_cache = cola_aux_cache.Dequeue();
+                    //Impresion en archivo
+                    archivo.WriteLine("Numero hilillo: " + aux_hilillo.obtenerIdentificadorHilillo());
+                    archivo.WriteLine("Finalizado: " + aux_hilillo.obtenerFinalizado());
+                    archivo.WriteLine("Program Counter: " + aux_hilillo.obtenerPC() + "\n");
+                    archivo.WriteLine("Ciclos de reloj: " + aux_hilillo.obtenerCiclosReloj() + "\n");
+                    //Impresion en pantalla
+                    Console.WriteLine("Numero hilillo: " + aux_hilillo.obtenerIdentificadorHilillo());
+                    Console.WriteLine("Finalizado: " + aux_hilillo.obtenerFinalizado());
+                    Console.WriteLine("Program Counter: " + aux_hilillo.obtenerPC() + "\n");
+                    Console.WriteLine("Ciclos de reloj: " + aux_hilillo.obtenerCiclosReloj() + "\n");
 
                     for (int i = 0; i < 32; i++)
-                        archivo.WriteLine("R[" + i + "] = " + aux.obtenerRegistros()[i] + "\n");
+                        archivo.WriteLine("R[" + i + "] = " + aux_hilillo.obtenerRegistros()[i] + "\n");
+                    Console.WriteLine("Caché de datos L1");
+
+                    int []estados=aux_cache.obtenerEstados();
+                    int [] num_bloques=aux_cache.obtenerNumBloques();
+                    for (int i = 0; i < 4; i++)
+                    {
+                        BloqueDatos bd = aux_cache.getBloque(i);
+                        Console.Write("Bloque " + i + "::::");
+                        Console.WriteLine(" P1: " + bd.getPalabra(0) + " P2: " + bd.getPalabra(1) + " P3: " + bd.getPalabra(2) + " P4: " + bd.getPalabra(3) + " E: " + estados[i] + " B: " + num_bloques[i]);
+                    }
+                    Console.WriteLine();
+                    Console.WriteLine();
+                    Console.WriteLine();
+
                 }
             }
         }

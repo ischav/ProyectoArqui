@@ -12,7 +12,7 @@ namespace ProcesadorMIPS
         const int INVALIDO = -1;
         const int COMPARTIDO = 0;
         const int MODIFICADO = 1;
-
+        
         //registros en el nucleo
         public int[] registros_nucleo;
 
@@ -22,6 +22,8 @@ namespace ProcesadorMIPS
         public int quantum_hilillo;
         public bool finalizado;
         public String identificador_hilillo;
+        public int acumulador_ciclos_reloj;
+
 
         public Nucleo() {
             quantum_hilillo = 0;
@@ -29,6 +31,22 @@ namespace ProcesadorMIPS
             registros_nucleo = new int[33];
             identificador_hilillo = "-1";
             RL = -1; // empieza en -1.
+        }
+
+        public void aumentarAcumuladorReloj()
+        {
+            acumulador_ciclos_reloj++;
+        }
+
+
+        public int obtenerAcumuladorReloj()
+        {
+            return acumulador_ciclos_reloj;
+        }
+
+        public void asignarAcumuladorReloj(int valor)
+        {
+            acumulador_ciclos_reloj=valor;
         }
         /*
          * Obtener el identificador del hilillo
