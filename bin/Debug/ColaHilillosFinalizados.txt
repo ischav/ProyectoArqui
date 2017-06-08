@@ -282,7 +282,7 @@ Numero hilillo: 2.txt
 Finalizado: True
 Program Counter: 252
 
-Ciclos de reloj: 2666
+Ciclos de reloj: 2667
 
 R[0] = 0
 
@@ -352,7 +352,7 @@ Numero hilillo: 4.txt
 Finalizado: True
 Program Counter: 480
 
-Ciclos de reloj: 3086
+Ciclos de reloj: 3087
 
 R[0] = 0
 

@@ -91,9 +91,6 @@ namespace ProcesadorMIPS
             barrera_fin_aumento_reloj = new Barrier(participantCount: 2);
 
             modo = false;
-
-
-
         }
 
         /*
@@ -543,7 +540,7 @@ namespace ProcesadorMIPS
                             encolado = true;
                         }
                     }
-                    Console.WriteLine("FINALIZADO " + id_nucleo);
+                    //Console.WriteLine("FINALIZADO " + id_nucleo);
                     break;
                 default:
                     break;
