@@ -19,6 +19,7 @@ namespace ProcesadorMIPS
         public BloqueDatos[] memoria_datos;
         public CacheDatos cache_L2;
         public BloqueInstrucciones[] memoria_instrucciones;
+        public bool modo;
 
         Reloj reloj;
         int quantum, cantidad_hilillos;
@@ -88,6 +89,11 @@ namespace ProcesadorMIPS
             barrera_fin_instruccion = new Barrier(participantCount: 2);
             barrera_inicio_aumento_reloj = new Barrier(participantCount: 2);
             barrera_fin_aumento_reloj = new Barrier(participantCount: 2);
+
+            modo = false;
+
+
+
         }
 
         /*
@@ -109,6 +115,10 @@ namespace ProcesadorMIPS
         public void asignarQuantum(int q)
         {
             this.quantum = q;
+        }
+
+        public void asignarModo(bool nuevo_modo) {
+            this.modo = nuevo_modo;
         }
 
 
@@ -220,6 +230,7 @@ namespace ProcesadorMIPS
                         nucleos[id_nucleo].setFinalizado(false);
                         nucleos[id_nucleo].asignarIdentificadorHilillo(hilo_desencolado.obtenerIdentificadorHilillo());
                         pudo_desencolar = true;
+                        Console.WriteLine("Hilo en ejecución: " + hilo_desencolado.obtenerIdentificadorHilillo() + ". En el nucleo: " + id_nucleo);
                     }
                     Monitor.Exit(cola_hilillos);
                     return pudo_desencolar;
@@ -269,7 +280,7 @@ namespace ProcesadorMIPS
             */
             while (desencolarHilillo(id_nucleo)) //mientras existan hilillos para desencolar
             {
-                imprimirMemorias();
+                //imprimirMemorias();
                 imprimirMensaje("INICIO DESENCOLADO", id_nucleo);
                 int current_quantum = 0;
                 //mientras no se le termine el quantum o no haya completado todas las instrucciones->continuar
@@ -403,9 +414,9 @@ namespace ProcesadorMIPS
                 */
                 case 35:
 
-                    imprimirMemorias();
+                    //imprimirMemorias();
                     operacion_LW(id_nucleo, op1, op2, op3);
-                    imprimirMemorias();
+                    //imprimirMemorias();
                     break;
 
                 /* SW
@@ -414,9 +425,9 @@ namespace ProcesadorMIPS
                 *                       
                 */
                 case 43:
-                    imprimirMemorias();
+                    //imprimirMemorias();
                     operacion_SW(id_nucleo, op1, op2, op3);
-                    imprimirMemorias();
+                    //imprimirMemorias();
                     break;
                 /* DSUB
                  * Si(op2 == 0):
@@ -531,7 +542,7 @@ namespace ProcesadorMIPS
             int ind_cache = num_bloque % 4; //indice de cache para la chaché L1 de datos.
             int valor_registro_guardar = nucleos[id_nucleo].obtenerRegistro(reg_a_guardar);
 
-            Console.WriteLine("SW Nucleo: " + id_nucleo + " va a escribir el valor " + valor_registro_guardar + "en la palabra " + num_palabra + " del bloque " + num_bloque + " de la direccion " + direccion);
+            //Console.WriteLine("SW Nucleo: " + id_nucleo + " va a escribir el valor " + valor_registro_guardar + "en la palabra " + num_palabra + " del bloque " + num_bloque + " de la direccion " + direccion);
 
             while (!guardado)
             {
@@ -765,7 +776,7 @@ namespace ProcesadorMIPS
         */
         public void operacion_LW(int id_nucleo, int reg_fuente, int reg_destino, int inmediato)
         {
-            Console.WriteLine("LOADDDDDDDDDDD");
+            //Console.WriteLine("LOADDDDDDDDDDD");
             bool cargado = false;
             int direccion = nucleos[id_nucleo].obtenerRegistro(reg_fuente) + inmediato; //Obtiene la dirección de memoria a cargar.
             int num_bloque = direccion / 16; //numero de bloque
@@ -895,6 +906,12 @@ namespace ProcesadorMIPS
             {
                 aumento_reloj = id_nucleo;
                 reloj.aumentarReloj();
+                Console.WriteLine("Ciclos de reloj: " + reloj.obtenerReloj());
+                if (modo)
+                {
+                    Console.WriteLine("Presione Enter para continuar...");
+                    while (Console.ReadKey().Key != ConsoleKey.Enter) { }
+                }
             }
             barrera_fin_aumento_reloj.SignalAndWait();
             if (aumento_reloj == id_nucleo)
@@ -1036,6 +1053,22 @@ namespace ProcesadorMIPS
                 Console.WriteLine(" P1: " + bd.getPalabra(0) + " P2: " + bd.getPalabra(1) + " P3: " + bd.getPalabra(2) + " P4: " + bd.getPalabra(3) + " E: " + estados2[i] + " B: " + num_bloques2[i]);
             }
         }
+
+
+        public void imprimirCacheL2()
+        {
+            Console.WriteLine("----------------Caché L2--------------");
+            int[] num_bloques1 = cache_L2.obtenerNumBloques();
+            int[] estados1 = cache_L2.obtenerEstados();
+
+            for (int i = 0; i < 8; i++)
+            {
+                BloqueDatos bd = cache_L2.getBloque(i);
+                Console.Write("Bloque " + i + "::::");
+                Console.WriteLine(" P1: " + bd.getPalabra(0) + " P2: " + bd.getPalabra(1) + " P3: " + bd.getPalabra(2) + " P4: " + bd.getPalabra(3) + " E: " + estados1[i] + " B: " + num_bloques1[i]);
+            }
+        }
+
     }
 
 }

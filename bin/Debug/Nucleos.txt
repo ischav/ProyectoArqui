@@ -41,7 +41,7 @@ R[31] : 55
 Contador de programa: 480
 Estado de los registros
 R[0] : 0
-R[1] : 136
+R[1] : 120
 R[2] : 352
 R[3] : 0
 R[4] : 4

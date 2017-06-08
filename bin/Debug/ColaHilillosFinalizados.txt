@@ -1,17 +1,17 @@
 Esto lo escribe...
-Numero hilillo: 0.txt
+Numero hilillo: 3.txt
 El hilillo inicia en la dirección: M[0]
 El hilillo finaliza en la dirección: M[0]
 Finalizado: True
-Program Counter: 84
+Program Counter: 376
 
 Ciclos de reloj: 0
 
 R[0] = 0
 
-R[1] = 1
+R[1] = 0
 
-R[2] = 192
+R[2] = 0
 
 R[3] = 0
 
@@ -57,78 +57,6 @@ R[23] = 0
 
 R[24] = 0
 
-R[25] = 0
-
-R[26] = 0
-
-R[27] = 0
-
-R[28] = 0
-
-R[29] = 0
-
-R[30] = 0
-
-R[31] = 99
-
-Numero hilillo: 3.txt
-El hilillo inicia en la dirección: M[0]
-El hilillo finaliza en la dirección: M[0]
-Finalizado: True
-Program Counter: 376
-
-Ciclos de reloj: 0
-
-R[0] = 0
-
-R[1] = 0
-
-R[2] = 0
-
-R[3] = 6
-
-R[4] = 4
-
-R[5] = 3
-
-R[6] = 3
-
-R[7] = 0
-
-R[8] = 0
-
-R[9] = 0
-
-R[10] = 6
-
-R[11] = 99
-
-R[12] = 0
-
-R[13] = 0
-
-R[14] = 0
-
-R[15] = 0
-
-R[16] = 0
-
-R[17] = 0
-
-R[18] = 0
-
-R[19] = 0
-
-R[20] = 0
-
-R[21] = 0
-
-R[22] = 0
-
-R[23] = 0
-
-R[24] = 0
-
 R[25] = 288
 
 R[26] = 0
@@ -139,7 +67,7 @@ R[28] = 0
 
 R[29] = 0
 
-R[30] = 24
+R[30] = 0
 
 R[31] = 44
 
@@ -214,6 +142,78 @@ R[29] = 0
 R[30] = 0
 
 R[31] = 504
+
+Numero hilillo: 0.txt
+El hilillo inicia en la dirección: M[0]
+El hilillo finaliza en la dirección: M[0]
+Finalizado: True
+Program Counter: 84
+
+Ciclos de reloj: 0
+
+R[0] = 0
+
+R[1] = 1
+
+R[2] = 192
+
+R[3] = 0
+
+R[4] = 4
+
+R[5] = 0
+
+R[6] = 0
+
+R[7] = 0
+
+R[8] = 0
+
+R[9] = 0
+
+R[10] = 0
+
+R[11] = 0
+
+R[12] = 0
+
+R[13] = 0
+
+R[14] = 44
+
+R[15] = 0
+
+R[16] = 0
+
+R[17] = 0
+
+R[18] = 0
+
+R[19] = 0
+
+R[20] = 0
+
+R[21] = 0
+
+R[22] = 0
+
+R[23] = 0
+
+R[24] = 0
+
+R[25] = 0
+
+R[26] = 0
+
+R[27] = 0
+
+R[28] = 0
+
+R[29] = 0
+
+R[30] = 0
+
+R[31] = 99
 
 Numero hilillo: 1.txt
 El hilillo inicia en la dirección: M[0]
@@ -369,7 +369,7 @@ Ciclos de reloj: 0
 
 R[0] = 0
 
-R[1] = 136
+R[1] = 120
 
 R[2] = 352
 
