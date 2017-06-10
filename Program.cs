@@ -61,31 +61,21 @@ namespace ProcesadorMIPS
             Nucleo1.Start(0);
             Nucleo2.Start(1);
 
-
             //se espera hasta que ambos terminen
             while (Nucleo1.IsAlive || Nucleo2.IsAlive)
             { }
 
             //se obtienen para recolectar sus dados
-
-
-
             Nucleo1.Join();
             Nucleo2.Join();
-            Nucleo[] nucleos=procesador.obtenerNucleos();
+            Nucleo[] nucleos = procesador.obtenerNucleos();
             int[] registros_nucleo_1 = nucleos[0].obtenerRegistros();
             int[] registros_nucleo_2 = nucleos[1].obtenerRegistros();
 
-
-            procesador.imprimirMemoriaDatos();
+            procesador.imprimirCachesDatos();
             procesador.imprimirCacheL2();
+            procesador.imprimirMemoriaDatos();
             procesador.imprimirColaHilillosFinalizados();
-            //procesador.imprimirCacheL1Hilillos();
-            //imprimirRegistros(registros_nucleo_1,1);
-            //imprimirRegistros(registros_nucleo_2,2);
-            //procesador.imprimirRegistros();
-            //procesador.imprimirColaHilillos();
-            //procesador.imprimirColaHilillosFinalizados();
 
             Console.WriteLine("Presione Enter para finalizar la ejecución...");
             while (Console.ReadKey().Key != ConsoleKey.Enter) { }
@@ -93,13 +83,12 @@ namespace ProcesadorMIPS
 
         public static void imprimirRegistros(int[] registros_nucleo, int nucleo_id)
         {
-            Console.WriteLine("Imprimiendo registros del nucleo "+nucleo_id+" después de la ejecución");
+            Console.WriteLine("Imprimiendo registros del nucleo " + nucleo_id + " después de la ejecución");
             for (int i = 0; i < 33; i++)
             {
                 Console.Write(registros_nucleo[i]+"::");
             }
             Console.WriteLine();
-
         }
 
         public static int obtenerCantidadHilillos()

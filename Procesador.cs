@@ -139,7 +139,6 @@ namespace ProcesadorMIPS
             }
         }
 
-
         /*
          * Metodo para inicializar las memorias caché
          */
@@ -193,7 +192,7 @@ namespace ProcesadorMIPS
             }
         }
 
-        /*Metodo que crea un hilillo
+        /* Metodo que crea un hilillo
          * le asigna el espacio de direcciones de las instrucciones (inicio, fin)
          * Se inserta en la cola de hilillos a la espera de ser procesados
         */
@@ -205,7 +204,6 @@ namespace ProcesadorMIPS
             hilillo.asignarPC(inicio);
             cola_hilillos.Enqueue(hilillo);
         }
-
 
         /*
          * Retorna verdadero si se pudo desencolar un hilillo
@@ -407,28 +405,6 @@ namespace ProcesadorMIPS
                         nucleos[id_nucleo].asignarRegistro(nucleos[id_nucleo].obtenerRegistro(op1) + nucleos[id_nucleo].obtenerRegistro(op2), op3);
                     }
                     break;
-                /* LW
-                * 
-                * 
-                *                       
-                */
-                case 35:
-
-                    //imprimirMemorias();
-                    operacion_LW(id_nucleo, op1, op2, op3);
-                    //imprimirMemorias();
-                    break;
-
-                /* SW
-                * 
-                * 
-                *                       
-                */
-                case 43:
-                    //imprimirMemorias();
-                    operacion_SW(id_nucleo, op1, op2, op3);
-                    //imprimirMemorias();
-                    break;
                 /* DSUB
                  * Si(op2 == 0):
                  *  “El registro 0 es inválido como destino”
@@ -540,7 +516,34 @@ namespace ProcesadorMIPS
                             encolado = true;
                         }
                     }
-                    //Console.WriteLine("FINALIZADO " + id_nucleo);
+                    break;
+                /* LW
+                 *
+                 */
+                case 35:
+                    operacion_LW(id_nucleo, op1, op2, op3);
+                    break;
+                /* SW
+                 *                       
+                 */
+                case 43:
+                    operacion_SW(id_nucleo, op1, op2, op3);
+                    break;
+                /* LL
+                 * R[op1] == M(op3 + (R[op2]))
+                 * RL == op3 + (R[op2])                 
+                 */
+                case 50:
+                    operacion_LL(id_nucleo, op1, op2, op3);
+                    break;
+                /* SC
+                 * Si RL = op3 + (R[op2])
+                 *      M(op3 + (R[op2])) == R[op1]
+                 * else 
+                 *      R[op1] == 0              
+                 */
+                case 51:
+                    operacion_SC(id_nucleo, op1, op2, op3);
                     break;
                 default:
                     break;
@@ -778,9 +781,6 @@ namespace ProcesadorMIPS
                 }
             }
             //aumento de reloj. Fin de la instrucción.
-
-
-
         }
 
         /**
@@ -796,9 +796,6 @@ namespace ProcesadorMIPS
             int num_bloque = direccion / 16; //numero de bloque
             int num_palabra = (direccion % 16) / 4; // numero de palabra
             int ind_cache = num_bloque % 4; //indice de cache para la chaché L1 de datos.
-
-
-
 
             while (!cargado)
             {
@@ -903,16 +900,23 @@ namespace ProcesadorMIPS
                 }
 
             }
-
             //aumento de reloj. Fin de instrucción
         }
-
-
+        
+        /*
+         * 
+         */
+        public void operacion_LL(int id_nucleo, int reg_fuente, int reg_destino, int inmediato) { }
 
         /*
- * Aumenta los ciclos del reloj; esperando a que el nucleo llegue a este punto
- * Solamente uno aumenta y libera
-*/
+         * 
+         */
+        public void operacion_SC(int id_nucleo, int reg_fuente, int reg_destino, int inmediato) { }
+        
+        /*
+         * Aumenta los ciclos del reloj; esperando a que el nucleo llegue a este punto
+         * Solamente uno aumenta y libera
+         */
         public void aumentarReloj(int id_nucleo)
         {
             barrera_inicio_aumento_reloj.SignalAndWait();
@@ -936,6 +940,9 @@ namespace ProcesadorMIPS
             }
         }
 
+        /*
+         * Método para pruebas
+         */
         public void imprimirMensaje(String mensaje, int nucleo_id)
         {
             if (DEBUG)
@@ -948,11 +955,9 @@ namespace ProcesadorMIPS
          *                               Métodos para imprimir 
          *             Los archivos generados se encuentra en ...\ProyectoArqui\bin\Debug
          * ------------------------------------------------------------------------------------------ */
-
         public void imprimirRegistros()
         {
             string fileName = Path.GetFullPath(Directory.GetCurrentDirectory() + @"\Nucleos.txt");
-            Console.WriteLine(fileName);
             using (StreamWriter archivo = new StreamWriter(fileName))
             {
                 {
@@ -974,7 +979,6 @@ namespace ProcesadorMIPS
         public void imprimirColaHilillos()
         {
             string fileName = Path.GetFullPath(Directory.GetCurrentDirectory() + @"\ColaHilillos.txt");
-            Console.WriteLine(fileName);
             using (StreamWriter archivo = new StreamWriter(fileName))
             {
                 Queue<Hilillo> cola_aux = new Queue<Hilillo>(cola_hilillos);
@@ -999,7 +1003,6 @@ namespace ProcesadorMIPS
         public void imprimirColaHilillosFinalizados()
         {
             string fileName = Path.GetFullPath(Directory.GetCurrentDirectory() + @"\ColaHilillosFinalizados.txt");
-            //CULPABLEEEEEEEEEE =====>   Console.WriteLine(fileName);
             using (StreamWriter archivo = new StreamWriter(fileName))
             {
                 Queue<Hilillo> cola_aux_hilillo = new Queue<Hilillo>(cola_hilillos_finalizados);
@@ -1014,81 +1017,86 @@ namespace ProcesadorMIPS
                     //Impresion en archivo
                     archivo.WriteLine("Numero hilillo: " + aux_hilillo.obtenerIdentificadorHilillo());
                     archivo.WriteLine("Finalizado: " + aux_hilillo.obtenerFinalizado());
-                    archivo.WriteLine("Program Counter: " + aux_hilillo.obtenerPC() + "\n");
+                    archivo.WriteLine("Program Counter: " + aux_hilillo.obtenerPC());
                     archivo.WriteLine("Ciclos de reloj: " + aux_hilillo.obtenerCiclosReloj() + "\n");
                     //Impresion en pantalla
                     Console.WriteLine("Numero hilillo: " + aux_hilillo.obtenerIdentificadorHilillo());
                     Console.WriteLine("Finalizado: " + aux_hilillo.obtenerFinalizado());
-                    Console.WriteLine("Program Counter: " + aux_hilillo.obtenerPC() + "\n");
+                    Console.WriteLine("Program Counter: " + aux_hilillo.obtenerPC());
                     Console.WriteLine("Ciclos de reloj: " + aux_hilillo.obtenerCiclosReloj() + "\n");
 
                     for (int i = 0; i < 32; i++)
                         archivo.WriteLine("R[" + i + "] = " + aux_hilillo.obtenerRegistros()[i] + "\n");
-                    Console.WriteLine("Caché de datos L1");
 
-                    int []estados=aux_cache.obtenerEstados();
-                    int [] num_bloques=aux_cache.obtenerNumBloques();
+                    Console.WriteLine("Caché de datos L1");
+                    archivo.WriteLine("Caché de datos L1");
+
+                    int []estados = aux_cache.obtenerEstados();
+                    int [] num_bloques = aux_cache.obtenerNumBloques();
                     for (int i = 0; i < 4; i++)
                     {
                         BloqueDatos bd = aux_cache.getBloque(i);
                         Console.Write("Bloque " + i + "::::");
                         Console.WriteLine(" P1: " + bd.getPalabra(0) + " P2: " + bd.getPalabra(1) + " P3: " + bd.getPalabra(2) + " P4: " + bd.getPalabra(3) + " E: " + estados[i] + " B: " + num_bloques[i]);
+                        archivo.Write("Bloque " + i);
+                        archivo.WriteLine("[" + bd.getPalabra(0) + " " + bd.getPalabra(1) + " " + bd.getPalabra(2) + " " + bd.getPalabra(3) + "] Estado: " + estados[i] + " Bloque: " + num_bloques[i]);
                     }
                     Console.WriteLine();
-                    Console.WriteLine();
-                    Console.WriteLine();
-
                 }
             }
         }
 
-        public void imprimirMemoriaInstrucciones()
-        {
-
-        }
-
-        public void imprimirMemorias()
-        {
-            imprimirMemoriaDatos();
-            imprimirCachesDatos();
-            Console.WriteLine("==============================================================================================================");
-        }
-
         public void imprimirMemoriaDatos()
         {
-            Console.WriteLine("------------Memoria Datos--------------", -1);
-            for (int i = 0; i < 24; i++)
+            string fileName = Path.GetFullPath(Directory.GetCurrentDirectory() + @"\MemoriaDatos.txt");
+            using (StreamWriter archivo = new StreamWriter(fileName))
             {
-                int[] palabras = memoria_datos[i].getPalabras();
-                Console.Write("Bloque " + i + "::::");
-                Console.WriteLine("P1: " + palabras[0] + " P2: " + palabras[1] + " P3: " + palabras[2] + " P4: " + palabras[3]);
+                archivo.WriteLine("------------Memoria Datos--------------", -1);
+                Console.WriteLine("------------Memoria Datos--------------", -1);
+                for (int i = 0; i < 24; i++)
+                {
+                    int[] palabras = memoria_datos[i].getPalabras();
+                    archivo.Write("Bloque " + i);
+                    archivo.WriteLine(" [" + palabras[0] + " " + palabras[1] + " " + palabras[2] + " " + palabras[3] + "]");
+                    Console.Write("Bloque " + i + "::::");
+                    Console.WriteLine("P1: " + palabras[0] + " P2: " + palabras[1] + " P3: " + palabras[2] + " P4: " + palabras[3]);
+                }
             }
         }
 
         public void imprimirCachesDatos()
         {
-            Console.WriteLine("----------------Caché L1 datos nucleo 1--------------");
-            int[] num_bloques1 = cache_L1_datos[0].obtenerNumBloques();
-            int[] estados1 = cache_L1_datos[0].obtenerEstados();
-
-            for (int i = 0; i < 4; i++)
+            string fileName = Path.GetFullPath(Directory.GetCurrentDirectory() + @"\MemoriaDatos.txt");
+            using (StreamWriter archivo = new StreamWriter(fileName))
             {
-                BloqueDatos bd = cache_L1_datos[0].getBloque(i);
-                Console.Write("Bloque " + i + "::::");
-                Console.WriteLine(" P1: " + bd.getPalabra(0) + " P2: " + bd.getPalabra(1) + " P3: " + bd.getPalabra(2) + " P4: " + bd.getPalabra(3)+" E: "+estados1[i]+" B: "+num_bloques1[i]);
-            }
-            Console.WriteLine("----------------Caché L1 datos nucleo 2--------------");
-            int[] num_bloques2 = cache_L1_datos[1].obtenerNumBloques();
-            int[] estados2 = cache_L1_datos[1].obtenerEstados();
+                archivo.WriteLine("----------------Caché L1 datos nucleo 1--------------");
+                Console.WriteLine("----------------Caché L1 datos nucleo 1--------------");
+                int[] num_bloques1 = cache_L1_datos[0].obtenerNumBloques();
+                int[] estados1 = cache_L1_datos[0].obtenerEstados();
 
-            for (int i = 0; i < 4; i++)
-            {
-                BloqueDatos bd = cache_L1_datos[1].getBloque(i);
-                Console.Write("Bloque " + i + "::::");
-                Console.WriteLine(" P1: " + bd.getPalabra(0) + " P2: " + bd.getPalabra(1) + " P3: " + bd.getPalabra(2) + " P4: " + bd.getPalabra(3) + " E: " + estados2[i] + " B: " + num_bloques2[i]);
+                for (int i = 0; i < 4; i++)
+                {
+                    BloqueDatos bd = cache_L1_datos[0].getBloque(i);
+                    archivo.Write("Bloque " + i );
+                    archivo.WriteLine(" P0 = [" + bd.getPalabra(0) + "] P1[ = [" + bd.getPalabra(1) + "] P3 = [" + bd.getPalabra(2) + "] P4 = [" + bd.getPalabra(3) + "], Estado = " + estados1[i] + " Bloque = " + num_bloques1[i]);
+                    Console.Write("Bloque " + i + "::::");
+                    Console.WriteLine(" P1: " + bd.getPalabra(0) + " P2: " + bd.getPalabra(1) + " P3: " + bd.getPalabra(2) + " P4: " + bd.getPalabra(3) + " E: " + estados1[i] + " B: " + num_bloques1[i]);
+                }
+                Console.WriteLine("----------------Caché L1 datos nucleo 2--------------");
+                archivo.WriteLine("----------------Caché L1 datos nucleo 2--------------");
+                int[] num_bloques2 = cache_L1_datos[1].obtenerNumBloques();
+                int[] estados2 = cache_L1_datos[1].obtenerEstados();
+
+                for (int i = 0; i < 4; i++)
+                {
+                    BloqueDatos bd = cache_L1_datos[1].getBloque(i);
+                    Console.Write("Bloque " + i + "::::");
+                    Console.WriteLine(" P1: " + bd.getPalabra(0) + " P2: " + bd.getPalabra(1) + " P3: " + bd.getPalabra(2) + " P4: " + bd.getPalabra(3) + " E: " + estados2[i] + " B: " + num_bloques2[i]);
+                    archivo.Write("Bloque " + i );
+                    archivo.WriteLine(" [" + bd.getPalabra(0) + " " + bd.getPalabra(1) + " " + bd.getPalabra(2) + " " + bd.getPalabra(3) + "] Estado: " + estados2[i] + " Bloque: " + num_bloques2[i]);
+                }
             }
         }
-
 
         public void imprimirCacheL2()
         {
@@ -1103,7 +1111,5 @@ namespace ProcesadorMIPS
                 Console.WriteLine(" P1: " + bd.getPalabra(0) + " P2: " + bd.getPalabra(1) + " P3: " + bd.getPalabra(2) + " P4: " + bd.getPalabra(3) + " E: " + estados1[i] + " B: " + num_bloques1[i]);
             }
         }
-
     }
-
 }
