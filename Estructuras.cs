@@ -96,6 +96,15 @@ namespace ProcesadorMIPS
                 instrucciones[i] = new Instruccion();
 
         }
+        public BloqueInstrucciones(int[] instrucciones_int)
+        {
+            instrucciones = new Instruccion[4];
+
+            for (int i = 0; i < 4; i++) { 
+                instrucciones[i] = new Instruccion();
+                instrucciones[i].setInstruccion(instrucciones_int);
+            }
+        }
 
         public void setInstruccion(Instruccion instruccion, int indice)
         {
