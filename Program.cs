@@ -80,6 +80,7 @@ namespace ProcesadorMIPS
             procesador.imprimirMemoriaDatos();
             procesador.imprimirCacheL2();
             procesador.imprimirColaHilillosFinalizados();
+            procesador.imprimirCachesDatos();
             //procesador.imprimirCacheL1Hilillos();
             //imprimirRegistros(registros_nucleo_1,1);
             //imprimirRegistros(registros_nucleo_2,2);

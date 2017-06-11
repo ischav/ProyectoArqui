@@ -672,7 +672,7 @@ namespace ProcesadorMIPS
                                     cache_L1_datos[otro_nucleo].setEstado(ind_cache, INVALIDO); //Invalido el bloque en la otra cache L1.
                                     //Se manda a escribir a L2 pero como L2 es No Write Allocate entonces se envia a escribir al siguiente nivel, osea, memoria.
 
-                                    if (nucleos[otro_nucleo].obtenerRL() == num_bloque)
+                                    if (nucleos[otro_nucleo].obtenerRL() == num_bloque)//cambiar número de bloque por dirección de memoria
                                     { //Si el RL es igual a mi direccion de memoria entonces se pone en -1
                                         nucleos[otro_nucleo].asignarRL(INVALIDO);
                                     }
