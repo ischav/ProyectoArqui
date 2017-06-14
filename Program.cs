@@ -39,8 +39,6 @@ namespace ProcesadorMIPS
              * se deben ejecutar*/
             procesador.CargarInstrucciones(rutas);
 
-            //Console.Write(procesador.imprimirMemoriaEstructuras());
-
             /*
              * En este punto el procesador tiene todo lo necesario para trabajar
              * Se han creado los hilillos y se han asignado a una cola
@@ -54,16 +52,17 @@ namespace ProcesadorMIPS
             // Se inicia la simulación nucleo 1 y 2
             Thread Nucleo1 = new Thread(procesador.inicializar);
             Thread Nucleo2 = new Thread(procesador.inicializar);
-            Nucleo1.Name="1";
+            Nucleo1.Name = "1";
             Nucleo2.Name = "2";
 
             //ejecución de ambos núcleos
             Nucleo1.Start(0);
             Nucleo2.Start(1);
 
-            //se espera hasta que ambos terminen
             while (Nucleo1.IsAlive || Nucleo2.IsAlive)
-            { }
+            {
+                //se espera hasta que ambos terminen
+            }
 
             //se obtienen para recolectar sus dados
             Nucleo1.Join();
@@ -81,27 +80,39 @@ namespace ProcesadorMIPS
             while (Console.ReadKey().Key != ConsoleKey.Enter) { }
         }
 
+        /*
+         * Método de prueba 
+         */
         public static void imprimirRegistros(int[] registros_nucleo, int nucleo_id)
         {
             Console.WriteLine("Imprimiendo registros del nucleo " + nucleo_id + " después de la ejecución");
             for (int i = 0; i < 33; i++)
             {
-                Console.Write(registros_nucleo[i]+"::");
+                Console.Write(registros_nucleo[i] + "::");
             }
             Console.WriteLine();
         }
 
+        /*
+         * Método que solicita la cantidad de hilillos
+         * que se van a ejecutar en la simulación.
+         */
         public static int obtenerCantidadHilillos()
         {
             int cantidad_hilillos = 0;
             //se recibe la cantidad de hilillos y se verifica que sea mayor a cero
-            while (cantidad_hilillos <= 0) {
+            while (cantidad_hilillos <= 0)
+            {
                 Console.WriteLine("Ingrese el número de hilillos que desea correr = ");
                 cantidad_hilillos = Convert.ToInt32(Console.ReadLine());
             }
             return cantidad_hilillos;
         }
 
+        /*
+         * Método que pregunta si desea ejecutar el programa
+         * en Modo Lento o Modo Rápido.
+         */
         public static bool obtenerModo()
         {
             DialogResult dialogResult = MessageBox.Show("Desea ver la ejecución en modo lento?", "Modo", MessageBoxButtons.YesNo);
@@ -117,7 +128,9 @@ namespace ProcesadorMIPS
             return false;
         }
 
-        // Leer ruta de archivos
+        /*
+        * Método para seleccionar los hilillos.
+        */
         public static string[] leerArchivo(int cantidad_hilillos)
         {
             String[] rutas = new String[cantidad_hilillos];
@@ -136,6 +149,9 @@ namespace ProcesadorMIPS
             return rutas;
         }
 
+        /*
+        * Método que solicita el número quantum.
+        */
         public static int obtenerQuantum()
         {
             int quantum = 0;
@@ -147,6 +163,5 @@ namespace ProcesadorMIPS
             }
             return quantum;
         }
-
     }
 }

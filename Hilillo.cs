@@ -8,18 +8,17 @@ namespace ProcesadorMIPS
 {
     class Hilillo
     {
-        String identificador_hilillo;//valor único para cada hilillo
-        int inicio_hilillo;//indica el inicio de la ejecución del hilillo.
-        int fin_hilillo;//indica el fin de la ejecución del hilillo
-        int [] registros_hilillo;//es el contexto, mantiene los valores del hilillo.
+        String identificador_hilillo; //valor único para cada hilillo
+        int inicio_hilillo; //indica el inicio de la ejecución del hilillo.
+        int fin_hilillo; //indica el fin de la ejecución del hilillo
+        int[] registros_hilillo; //es el contexto, mantiene los valores del hilillo.
         int pc_hilillo;
-        int nucleo_hilillo;//indica el procesador en el que está corriendo el hilillo
-        int ciclos_reloj_hilillo;//cantidad de ciclos de reloj asignadas al hilillo
-        bool finalizado_hilillo;//indica el estado del hilillo
+        int nucleo_hilillo; //indica el procesador en el que está corriendo el hilillo
+        int ciclos_reloj_hilillo; //cantidad de ciclos de reloj asignadas al hilillo
+        bool finalizado_hilillo; //indica el estado del hilillo
 
         /*
-        *
-        *
+        * Constructor de la clase.
         */
         public Hilillo(String identificador)
         {
@@ -39,186 +38,96 @@ namespace ProcesadorMIPS
             ciclos_reloj_hilillo = 0;
         }
 
-
-        /*
-        *
-        *
-        */
         public void asignarIdentificadorHilillo(String numero)
         {
             this.identificador_hilillo = numero;
         }
-        
-        
-        /*
-        *
-        *
-        */
+
         public String obtenerIdentificadorHilillo()
         {
             return identificador_hilillo;
         }
-        
-        
-        /*
-        *
-        *
-        */
+
         public void asignarCiclosReloj(int ciclos)
         {
             this.ciclos_reloj_hilillo = ciclos;
         }
 
-        /*
-        *
-        *
-        */
         public int obtenerCiclosReloj()
         {
             return this.ciclos_reloj_hilillo;
         }
-        
-        
-        /*
-        *
-        *
-        */
+
         public void asignarInicioHilillo(int inicia)
         {
             inicio_hilillo = inicia;
         }
 
 
-        /*
-        *
-        *
-        */
         public int obtenerInicioHilillo()
         {
             return inicio_hilillo;
         }
-        
-        
-        /*
-        *
-        *
-        */
+
         public void asignarFinHilillo(int termina)
         {
             fin_hilillo = termina;
         }
-        
-        
-        /*
-        *
-        *
-        */
+
         public int obtenerFinHilillo()
         {
             return fin_hilillo;
         }
-        
-        
-        /*
-        *
-        *
-        */
+
         public int obtenerPC()
         {
             return registros_hilillo[32];
         }
-        
-        
-        /*
-        *
-        *
-        */
+
         public void asignarPC(int contador_programa)
         {
             registros_hilillo[32] = contador_programa;
         }
 
-        
-        /*
-        *
-        *
-        */
         public int[] obtenerRegistros()
         {
             return registros_hilillo;
         }
 
-        
-        /*
-        *
-        *
-        */
         public void asignarContexto(int[] reg)
         {
-
             for (int i = 0; i < 33; i++)
                 registros_hilillo[i] = reg[i];
         }
 
-        /*
-        *
-        *
-        */
         public int[] obtenerContexto()
         {
             return registros_hilillo;
         }
 
-
-        /*
-        *
-        *
-        */
         public void asignarFinalizado()
         {
             finalizado_hilillo = true;
         }
 
-
-        /*
-        *
-        *
-        */
         public void asignarFinalizado(bool f)
         {
             finalizado_hilillo = f;
         }
 
-        
-        /*
-        *
-        *
-        */
         public bool obtenerFinalizado()
         {
             return finalizado_hilillo;
         }
-        
 
-        /*
-        *
-        *
-        */
         public void asignarNumeroNucleo(int hilo)
         {
             nucleo_hilillo = hilo;
         }
 
-
-        /*
-        *
-        *
-        */
         public int obtenerNumeroNucleo()
         {
             return nucleo_hilillo;
         }
-
-
     }
 }
