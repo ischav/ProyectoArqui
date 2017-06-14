@@ -775,7 +775,7 @@ namespace ProcesadorMIPS
                             { //Pido candado para Cache L2, lo que significa que obtengo el bus y puedo trbajar con Cache L2 y memoria.
                                 //Console.WriteLine("Tengo caché L2 de datos. Nucleo: " + id_nucleo);
                                 int otro_nucleo = id_nucleo == 1 ? 0 : 1; //Para saber cual es el id del otro nucleo.
-                                Console.WriteLine("Antes de bloquear caché L1 de datos del otro nucleo. Nucleo: " + id_nucleo + ". Otro Nucleo: " + otro_nucleo);
+                                //Console.WriteLine("Antes de bloquear caché L1 de datos del otro nucleo. Nucleo: " + id_nucleo + ". Otro Nucleo: " + otro_nucleo);
                                 if (Monitor.TryEnter(cache_L1_datos[otro_nucleo]))
                                 { //Pido candado para la otra cache L1;
                                     //Console.WriteLine("Tengo caché L1 de datos del otro nucleo. Nucleo: " + id_nucleo + ". Otro Nucleo: " + otro_nucleo);
@@ -814,7 +814,7 @@ namespace ProcesadorMIPS
                                     //Console.WriteLine("Antes de liberar caché L2 de datos. Nucleo: " + id_nucleo);
                                     Monitor.Exit(cache_L2); //Libero la caché L2, osea, el Bus.
                                     //Console.WriteLine("Despues de liberar caché L2 de datos. Nucleo: " + id_nucleo);
-                                    Console.WriteLine("Antes de liberar mi caché L1 de datos. Nucleo: " + id_nucleo);
+                                    //Console.WriteLine("Antes de liberar mi caché L1 de datos. Nucleo: " + id_nucleo);
                                     Monitor.Exit(cache_L1_datos[id_nucleo]); //Libero mi caché.
                                     //Console.WriteLine("Despues de liberar mi caché L1 de datos. Nucleo: " + id_nucleo);
                                     aumentarReloj(id_nucleo); //aumento reloj
