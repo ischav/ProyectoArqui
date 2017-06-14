@@ -20,6 +20,7 @@ namespace ProcesadorMIPS
         public CacheDatos cache_L2;
         public BloqueInstrucciones[] memoria_instrucciones;
         public bool modo;
+        public bool[] load_link;
 
         Reloj reloj;
         int quantum, cantidad_hilillos;
@@ -84,6 +85,7 @@ namespace ProcesadorMIPS
             cola_hilillos = new Queue<Hilillo>();
             cola_hilillos_finalizados = new Queue<Hilillo>();
             cola_cache_L1_hilillos_finalizados = new Queue<CacheDatos>();
+            load_link = new bool[2] { false, false };
 
             /* Barreras que controlan el quantum, ya que una instrucción 
              * equivale a un elemento del quantum
@@ -293,6 +295,7 @@ namespace ProcesadorMIPS
                     //barrera_inicio_instruccion.SignalAndWait();
                     imprimirMensaje("4 Main Posterior a barrera_inicio_instruccion, entrando en obtener instrucción ", id_nucleo);
                     //ejeución de la instrucción
+                    load_link[id_nucleo] = false;
                     this.ejecutarInstruccion(id_nucleo, instruccion[0], instruccion[1], instruccion[2], instruccion[3]);
                     imprimirMensaje("5 Main Posterior a obtener instrucción, aumentando el reloj ", id_nucleo);
                     //aumento del reloj para la instrucción
@@ -308,6 +311,10 @@ namespace ProcesadorMIPS
                 {
                     //Aquí copiar contexto y encolar
                     encolarHilillo(id_nucleo);
+                    if (load_link[id_nucleo]) {
+                        nucleos[id_nucleo].asignarRL(-1);
+                        load_link[id_nucleo] = false;
+                    }
                     imprimirMensaje("FIN DE QUANTUM ", id_nucleo);
                 }
             }
@@ -1108,6 +1115,7 @@ namespace ProcesadorMIPS
                         nucleos[id_nucleo].asignarRL(direccion); //Asigno el valor de la dirección en el RL.
                         Monitor.Exit(cache_L1_datos[id_nucleo]);
                         cargado = true;
+                        load_link[id_nucleo] = true;
                     }
                     else
                     { //No hay acierto.
@@ -1179,6 +1187,7 @@ namespace ProcesadorMIPS
                                 nucleos[id_nucleo].asignarRL(direccion); //Asigno el valor de la dirección en el RL.
                                 Monitor.Exit(cache_L1_datos[id_nucleo]);
                                 cargado = true;
+                                load_link[id_nucleo] = true;
 
                             }
                             else
