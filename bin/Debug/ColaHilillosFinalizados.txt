@@ -1,7 +1,7 @@
 Numero hilillo: 0.txt
 Finalizado: True
 Program Counter: 32
-Ciclos de reloj: 381
+Ciclos de reloj: 475
 
 R[0] = 0
 
@@ -75,7 +75,7 @@ Bloque 3[0 0 0 0] Estado: -1 Bloque: -1
 Numero hilillo: 1.txt
 Finalizado: True
 Program Counter: 96
-Ciclos de reloj: 992
+Ciclos de reloj: 669
 
 R[0] = 0
 
@@ -142,14 +142,14 @@ R[30] = 0
 R[31] = 0
 
 Caché de datos L1
-Bloque 0[1 1 1 1] Estado: 1 Bloque: 16
-Bloque 1[2 2 2 2] Estado: 1 Bloque: 13
+Bloque 0[1 1 1 1] Estado: -1 Bloque: 16
+Bloque 1[1 0 1 1] Estado: -1 Bloque: 9
 Bloque 2[2 2 2 2] Estado: 1 Bloque: 14
-Bloque 3[0 1 1 1] Estado: 0 Bloque: 11
+Bloque 3[0 1 1 1] Estado: 1 Bloque: 11
 Numero hilillo: 4.txt
 Finalizado: True
 Program Counter: 376
-Ciclos de reloj: 1193
+Ciclos de reloj: 1052
 
 R[0] = 0
 
@@ -223,7 +223,7 @@ Bloque 3[4 4 4 4] Estado: 1 Bloque: 23
 Numero hilillo: 2.txt
 Finalizado: True
 Program Counter: 156
-Ciclos de reloj: 720
+Ciclos de reloj: 600
 
 R[0] = 0
 
@@ -292,12 +292,12 @@ R[31] = 140
 Caché de datos L1
 Bloque 0[45 42 1 1] Estado: 1 Bloque: 0
 Bloque 1[2 2 2 2] Estado: 0 Bloque: 13
-Bloque 2[0 0 0 0] Estado: -1 Bloque: -1
+Bloque 2[1 1 4 4] Estado: 1 Bloque: 18
 Bloque 3[1 1 1 1] Estado: 1 Bloque: 11
 Numero hilillo: 3.txt
 Finalizado: True
 Program Counter: 288
-Ciclos de reloj: 1726
+Ciclos de reloj: 1262
 
 R[0] = 0
 
@@ -365,13 +365,87 @@ R[31] = 0
 
 Caché de datos L1
 Bloque 0[1 60 2 2] Estado: 1 Bloque: 12
-Bloque 1[2 2 2 2] Estado: 0 Bloque: 13
+Bloque 1[4 4 4 4] Estado: 1 Bloque: 21
 Bloque 2[2 2 2 2] Estado: 0 Bloque: 14
-Bloque 3[1 1 1 1] Estado: 1 Bloque: 11
+Bloque 3[4 4 4 4] Estado: 1 Bloque: 23
+Numero hilillo: 6.txt
+Finalizado: True
+Program Counter: 564
+Ciclos de reloj: 2019
+
+R[0] = 0
+
+R[1] = 1
+
+R[2] = 0
+
+R[3] = 0
+
+R[4] = 384
+
+R[5] = 0
+
+R[6] = 0
+
+R[7] = 0
+
+R[8] = 8
+
+R[9] = 0
+
+R[10] = 4
+
+R[11] = 4
+
+R[12] = 88
+
+R[13] = 0
+
+R[14] = -88
+
+R[15] = -1
+
+R[16] = 0
+
+R[17] = 0
+
+R[18] = 0
+
+R[19] = 0
+
+R[20] = 0
+
+R[21] = 0
+
+R[22] = 0
+
+R[23] = 0
+
+R[24] = 0
+
+R[25] = 0
+
+R[26] = 0
+
+R[27] = 0
+
+R[28] = 0
+
+R[29] = 0
+
+R[30] = 0
+
+R[31] = 0
+
+Caché de datos L1
+Bloque 0[-88 1 1 1] Estado: 1 Bloque: 16
+Bloque 1[4 4 4 4] Estado: -1 Bloque: 21
+Bloque 2[4 4 4 4] Estado: 0 Bloque: 22
+Bloque 3[4 4 4 4] Estado: 0 Bloque: 23
 Numero hilillo: 5.txt
 Finalizado: True
 Program Counter: 464
-Ciclos de reloj: 2598
+Ciclos de reloj: 2262
 
 R[0] = 0
 
@@ -438,81 +512,7 @@ R[30] = 0
 R[31] = 0
 
 Caché de datos L1
-Bloque 0[1 0 0 1] Estado: 1 Bloque: 16
-Bloque 1[5 5 5 5] Estado: 0 Bloque: 21
-Bloque 2[5 5 5 5] Estado: 0 Bloque: 22
-Bloque 3[5 5 5 5] Estado: 0 Bloque: 23
-Numero hilillo: 6.txt
-Finalizado: True
-Program Counter: 564
-Ciclos de reloj: 2690
-
-R[0] = 0
-
-R[1] = 1
-
-R[2] = 0
-
-R[3] = 0
-
-R[4] = 384
-
-R[5] = 0
-
-R[6] = 0
-
-R[7] = 0
-
-R[8] = 8
-
-R[9] = 0
-
-R[10] = 5
-
-R[11] = 5
-
-R[12] = 107
-
-R[13] = 0
-
-R[14] = -107
-
-R[15] = -1
-
-R[16] = 0
-
-R[17] = 0
-
-R[18] = 0
-
-R[19] = 0
-
-R[20] = 0
-
-R[21] = 0
-
-R[22] = 0
-
-R[23] = 0
-
-R[24] = 0
-
-R[25] = 0
-
-R[26] = 0
-
-R[27] = 0
-
-R[28] = 0
-
-R[29] = 0
-
-R[30] = 0
-
-R[31] = 0
-
-Caché de datos L1
-Bloque 0[-107 0 0 1] Estado: 1 Bloque: 16
-Bloque 1[5 5 5 5] Estado: 0 Bloque: 21
-Bloque 2[5 5 5 5] Estado: 0 Bloque: 22
-Bloque 3[5 5 5 5] Estado: 0 Bloque: 23
+Bloque 0[-88 0 0 1] Estado: 1 Bloque: 16
+Bloque 1[5 5 5 5] Estado: 1 Bloque: 21
+Bloque 2[5 5 5 5] Estado: 1 Bloque: 22
+Bloque 3[5 5 5 5] Estado: 1 Bloque: 23
