@@ -71,9 +71,9 @@ namespace ProcesadorMIPS
             int[] registros_nucleo_1 = nucleos[0].obtenerRegistros();
             int[] registros_nucleo_2 = nucleos[1].obtenerRegistros();
 
+            procesador.imprimirMemoriaDatos();
             procesador.imprimirCachesDatos();
             procesador.imprimirCacheL2();
-            procesador.imprimirMemoriaDatos();
             procesador.imprimirColaHilillosFinalizados();
 
             Console.WriteLine("Presione Enter para finalizar la ejecución...");
